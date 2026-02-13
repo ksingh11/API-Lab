@@ -9,20 +9,60 @@ bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 @bp.route('/login', methods=['POST'])
 def login():
     """
-    Login endpoint - returns JWT token
-    
-    Request:
-        {
-            "email": "testuser@apilab.dev",
-            "password": "test123"
-        }
-    
-    Response:
-        {
-            "token": "eyJhbGc...",
-            "user": {...},
-            "expires_in": 86400
-        }
+    Login to get JWT token
+    ---
+    tags:
+      - Authentication
+    summary: Login with email and password
+    description: Returns a JWT token valid for 24 hours. Use this token for authenticated requests.
+    parameters:
+      - in: body
+        name: credentials
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              example: testuser@apilab.dev
+              description: User email address
+            password:
+              type: string
+              example: test123
+              description: User password
+    responses:
+      200:
+        description: Login successful
+        schema:
+          type: object
+          properties:
+            token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+              description: JWT token (use in Authorization header)
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                email:
+                  type: string
+                  example: testuser@apilab.dev
+                role:
+                  type: string
+                  example: user
+            expires_in:
+              type: integer
+              example: 86400
+              description: Token expiry time in seconds (24 hours)
+      400:
+        description: Missing email or password
+      401:
+        description: Invalid credentials
     """
     data = request.get_json()
     

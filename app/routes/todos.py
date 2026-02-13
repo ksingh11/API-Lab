@@ -76,19 +76,52 @@ def get_authenticated_user():
 @bp.route('', methods=['GET'])
 def get_todos():
     """
-    Get all todos for the authenticated user.
-    Supports both Basic Auth and JWT Token Auth.
-    
-    Headers:
-        Authorization: Basic <base64(email:password)>
-        OR
-        Authorization: Bearer <jwt_token>
-    
-    Response:
-        {
-            "data": [...],
-            "count": 5
-        }
+    Get all todos for the authenticated user
+    ---
+    tags:
+      - Todos
+    summary: Get all todos
+    description: Returns all todos for the authenticated user. Supports both Basic Auth and JWT Token Auth.
+    security:
+      - Bearer: []
+      - BasicAuth: []
+    responses:
+      200:
+        description: List of todos
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              title:
+                type: string
+                example: "Buy groceries"
+              description:
+                type: string
+                example: "Milk, eggs, bread"
+              completed:
+                type: boolean
+                example: false
+              owner_id:
+                type: integer
+                example: 1
+              created_at:
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                format: date-time
+      401:
+        description: Unauthorized - Authentication required
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Authentication required"
     """
     user = get_authenticated_user()
     
@@ -109,8 +142,52 @@ def get_todos():
 @bp.route('/<int:todo_id>', methods=['GET'])
 def get_todo(todo_id):
     """
-    Get a specific todo by ID.
-    User can only access their own todos.
+    Get a single todo by ID
+    ---
+    tags:
+      - Todos
+    summary: Get one specific todo
+    description: Returns a single todo item. Users can only view their own todos.
+    security:
+      - Bearer: []
+      - BasicAuth: []
+    parameters:
+      - in: path
+        name: todo_id
+        required: true
+        type: integer
+        description: ID of the todo to retrieve
+        example: 1
+    responses:
+      200:
+        description: Todo retrieved successfully
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                title:
+                  type: string
+                  example: Buy groceries
+                description:
+                  type: string
+                completed:
+                  type: boolean
+                owner_id:
+                  type: integer
+                created_at:
+                  type: string
+                  format: date-time
+      401:
+        description: Authentication required
+      403:
+        description: Not authorized to view this todo
+      404:
+        description: Todo not found
     """
     user = get_authenticated_user()
     
@@ -142,19 +219,66 @@ def get_todo(todo_id):
 @bp.route('', methods=['POST'])
 def create_todo():
     """
-    Create a new todo.
-    
-    Request Body:
-        {
-            "title": "My new todo",
-            "description": "Optional description",
-            "completed": false
-        }
-    
-    Response:
-        {
-            "data": {...}
-        }
+    Create a new todo
+    ---
+    tags:
+      - Todos
+    summary: Create a new todo item
+    description: Creates a new todo task. Requires authentication.
+    security:
+      - Bearer: []
+      - BasicAuth: []
+    parameters:
+      - in: body
+        name: todo
+        required: true
+        schema:
+          type: object
+          required:
+            - title
+          properties:
+            title:
+              type: string
+              example: Buy groceries
+              description: Todo title (required, max 255 chars)
+            description:
+              type: string
+              example: Milk, eggs, bread
+              description: Optional description
+            completed:
+              type: boolean
+              example: false
+              description: Completion status (default false)
+    responses:
+      201:
+        description: Todo created successfully
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 42
+                title:
+                  type: string
+                  example: Buy groceries
+                description:
+                  type: string
+                completed:
+                  type: boolean
+                owner_id:
+                  type: integer
+                created_at:
+                  type: string
+                  format: date-time
+      400:
+        description: Missing request body
+      401:
+        description: Authentication required
+      422:
+        description: Validation error (missing title or too long)
     """
     user = get_authenticated_user()
     
@@ -210,22 +334,73 @@ def create_todo():
 @bp.route('/<int:todo_id>', methods=['PUT', 'PATCH'])
 def update_todo(todo_id):
     """
-    Update an existing todo.
-    
-    PUT: Full update (send all fields)
-    PATCH: Partial update (send only fields to change)
-    
-    Request Body (PUT - all fields):
-        {
-            "title": "Updated title",
-            "description": "Updated description",
-            "completed": true
-        }
-    
-    Request Body (PATCH - partial):
-        {
-            "completed": true
-        }
+    Update a todo (PUT = full update, PATCH = partial update)
+    ---
+    tags:
+      - Todos
+    summary: Update an existing todo
+    description: |
+      **PUT**: Full update - send all fields (replaces entire todo)
+      
+      **PATCH**: Partial update - send only fields to change
+    security:
+      - Bearer: []
+      - BasicAuth: []
+    parameters:
+      - in: path
+        name: todo_id
+        required: true
+        type: integer
+        description: ID of the todo to update
+        example: 5
+      - in: body
+        name: todo
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+              example: Buy milk and eggs
+              description: New title (required for PUT, optional for PATCH)
+            description:
+              type: string
+              example: From the organic store
+              description: New description (optional)
+            completed:
+              type: boolean
+              example: true
+              description: Completion status (optional)
+    responses:
+      200:
+        description: Todo updated successfully
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: integer
+                title:
+                  type: string
+                description:
+                  type: string
+                completed:
+                  type: boolean
+                owner_id:
+                  type: integer
+                updated_at:
+                  type: string
+                  format: date-time
+      401:
+        description: Authentication required
+      403:
+        description: Not authorized to update this todo
+      404:
+        description: Todo not found
+      422:
+        description: Validation error
     """
     user = get_authenticated_user()
     
@@ -286,7 +461,31 @@ def update_todo(todo_id):
 @bp.route('/<int:todo_id>', methods=['DELETE'])
 def delete_todo(todo_id):
     """
-    Delete a todo.
+    Delete a todo
+    ---
+    tags:
+      - Todos
+    summary: Delete a todo item
+    description: Permanently deletes a todo. Only the owner can delete their todos.
+    security:
+      - Bearer: []
+      - BasicAuth: []
+    parameters:
+      - in: path
+        name: todo_id
+        required: true
+        type: integer
+        description: ID of the todo to delete
+        example: 5
+    responses:
+      204:
+        description: Todo deleted successfully (no content)
+      401:
+        description: Authentication required
+      403:
+        description: Not authorized to delete this todo
+      404:
+        description: Todo not found
     """
     user = get_authenticated_user()
     

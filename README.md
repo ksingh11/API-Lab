@@ -1,4 +1,4 @@
-# 🧪 API Lab - Interactive API Learning Sandbox
+# 🧪 API Zero to Hero - Interactive API Learning Sandbox
 
 > Learn APIs by doing—no terminal, no coding, just clicking and experimenting.
 
@@ -6,9 +6,9 @@
 
 ---
 
-## What is API Lab?
+## What is API Zero to Hero?
 
-API Lab is a **flight simulator for APIs**. A safe playground where you can:
+API Zero to Hero is a **flight simulator for APIs**. A safe playground where you can:
 
 - ✅ Make real API requests from your browser
 - ✅ See live database changes in real-time
@@ -149,7 +149,7 @@ Then open: **http://localhost:5000**
 
 ## 🎯 First Steps
 
-After opening API Lab:
+After opening API Zero to Hero:
 
 1. **Try a scenario** - Click "Scenarios" tab and pick "E-commerce Checkout" for a guided tour
 2. **Explore the playground** - Try making a GET request to `/api/todos`

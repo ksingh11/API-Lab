@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-API Lab - Interactive API Learning Sandbox
+API Zero to Hero - Interactive API Learning Sandbox
 Entry point for the application
 """
 

@@ -1,6 +1,6 @@
 """
 Postman Collection Generator
-Generates a Postman Collection v2.1 JSON with all API Lab endpoints
+Generates a Postman Collection v2.1 JSON with all API Zero to Hero endpoints
 """
 
 def generate_postman_collection(base_url="http://localhost:5000"):
@@ -8,7 +8,7 @@ def generate_postman_collection(base_url="http://localhost:5000"):
     
     collection = {
         "info": {
-            "name": "API Lab - Learning Collection",
+            "name": "API Zero to Hero - Learning Collection",
             "description": "Interactive API learning sandbox with authentication examples",
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
         },

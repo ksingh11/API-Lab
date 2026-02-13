@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Lab - Interactive API Learning Sandbox</title>
+    <title>API Zero to Hero - Interactive API Learning Sandbox</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -73,13 +73,63 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
                     <span class="text-2xl">🧪</span>
-                    <h1 class="ml-3 text-xl font-bold">API Lab</h1>
+                    <h1 class="ml-3 text-xl font-bold">API Zero to Hero</h1>
                     <span class="ml-3 text-sm opacity-75">Interactive API Learning</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button @click="downloadPostmanCollection()" class="px-4 py-2 bg-green-500 hover:bg-green-400 rounded-lg transition">
-                        📮 Download Postman Collection
-                    </button>
+                    <!-- Login Status / Login Button -->
+                    <div x-show="!token">
+                        <button @click="showLoginModal = true" class="px-4 py-2 bg-white text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition">
+                            🔐 Login
+                        </button>
+                    </div>
+                    <div x-show="token" class="flex items-center space-x-3">
+                        <span class="flex items-center px-3 py-1.5 bg-green-500 bg-opacity-20 rounded-lg text-sm">
+                            <svg class="w-4 h-4 mr-1.5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span x-text="currentUser?.email"></span>
+                        </span>
+                        <button @click="token = null; currentUser = null; localStorage.removeItem('apilab_token'); localStorage.removeItem('apilab_user')" 
+                                class="px-3 py-1.5 bg-red-500 bg-opacity-20 text-white text-sm rounded-lg hover:bg-opacity-30 transition">
+                            Logout
+                        </button>
+                    </div>
+                    
+                    <!-- Swagger API Docs Link -->
+                    <div class="relative group">
+                        <a :href="apiBaseUrl + '/api/docs/swagger'" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-400 rounded-lg transition text-white font-medium">
+                            <!-- Swagger Icon SVG -->
+                            <svg class="w-5 h-5 mr-2" viewBox="0 0 256 256" fill="currentColor">
+                                <path d="M127.999 0C57.421 0 0 57.421 0 127.999c0 70.578 57.421 128 127.999 128 70.579 0 128.001-57.422 128.001-128C256 57.421 198.578 0 127.999 0zm0 236.225c-59.729 0-108.226-48.497-108.226-108.226S68.27 19.773 127.999 19.773c59.73 0 108.227 48.497 108.227 108.226S187.729 236.225 127.999 236.225z"/>
+                                <path d="M128 64.666c-35.034 0-63.556 28.523-63.556 63.556 0 35.034 28.522 63.556 63.556 63.556s63.556-28.522 63.556-63.556c0-35.033-28.522-63.556-63.556-63.556zm27.945 77.778h-12.89v44.445h-30v-44.445h-12.89l27.89-33.334 27.89 33.334z"/>
+                            </svg>
+                            Swagger
+                        </a>
+                        <!-- Tooltip -->
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            Interactive API Documentation
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Download Postman Collection -->
+                    <div class="relative group">
+                        <button @click="downloadPostmanCollection()" 
+                                class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-400 rounded-lg transition text-white font-medium">
+                            <!-- Download Icon SVG -->
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Postman
+                        </button>
+                        <!-- Tooltip -->
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            Download Postman Collection
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -94,25 +144,25 @@
             <!-- Tabs -->
             <div class="mb-6 border-b border-gray-200">
                 <nav class="flex space-x-8">
-                    <button @click="activeTab = 'playground'" 
-                            :class="activeTab === 'playground' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                            class="pb-4 px-1 border-b-2 font-medium transition">
-                        🚀 Playground
-                    </button>
                     <button @click="activeTab = 'learn'" 
                             :class="activeTab === 'learn' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                             class="pb-4 px-1 border-b-2 font-medium transition">
                         📚 Learn
                     </button>
-                    <button @click="activeTab = 'docs'" 
-                            :class="activeTab === 'docs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                    <button @click="activeTab = 'playground'" 
+                            :class="activeTab === 'playground' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                             class="pb-4 px-1 border-b-2 font-medium transition">
-                        📖 API Docs
+                        🚀 Playground
                     </button>
                     <button @click="activeTab = 'database'; loadDatabaseTables()" 
                             :class="activeTab === 'database' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                             class="pb-4 px-1 border-b-2 font-medium transition">
                         📊 Database
+                    </button>
+                    <button @click="activeTab = 'docs'" 
+                            :class="activeTab === 'docs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        📖 API Docs
                     </button>
                     <button @click="activeTab = 'settings'" 
                             :class="activeTab === 'settings' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
@@ -133,6 +183,11 @@
                             :class="activeLesson === 'intro' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
                             class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
                         🎯 Introduction to APIs
+                    </button>
+                    <button @click="activeLesson = 'client-server'" 
+                            :class="activeLesson === 'client-server' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        💻 Client vs Server
                     </button>
                     <button @click="activeLesson = 'http'" 
                             :class="activeLesson === 'http' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
@@ -159,6 +214,16 @@
                             class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
                         💻 Practical Examples
                     </button>
+                    <button @click="activeLesson = 'apidocs'" 
+                            :class="activeLesson === 'apidocs' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        📄 API Documentation
+                    </button>
+                    <button @click="activeLesson = 'swagger'" 
+                            :class="activeLesson === 'swagger' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        🔄 What is Swagger?
+                    </button>
                 </div>
 
                 <!-- Learning Content Display -->
@@ -167,306 +232,939 @@
                     <div x-show="activeLesson === 'intro'">
                         <h3 class="font-bold text-lg mb-3 text-blue-700">🎯 What is an API?</h3>
                         
-                        <div class="mb-4">
-                            <p class="text-gray-700 mb-3 leading-relaxed">
-                                <strong>API</strong> stands for <em>Application Programming Interface</em>. 
-                                Think of it as a waiter in a restaurant:
-                            </p>
-                            
-                            <div class="bg-white p-3 rounded border-l-4 border-blue-400 mb-3">
-                                <p class="text-xs font-bold text-blue-700 mb-2">🍽️ The Restaurant Analogy</p>
-                                <ul class="space-y-2 text-xs text-gray-700">
-                                    <li>👤 <strong>You (Client)</strong> - The customer who wants something</li>
-                                    <li>👨‍🍳 <strong>Kitchen (Server)</strong> - Has all the food/data</li>
-                                    <li>🤵 <strong>Waiter (API)</strong> - Takes your order to kitchen, brings food back</li>
-                                </ul>
+                        <!-- Video Section -->
+                        <div class="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">🎬</span>
+                                <p class="font-bold text-purple-800 text-base">Watch: How Apps Really Work</p>
                             </div>
-                            
-                            <p class="text-gray-700 mb-2 leading-relaxed">
-                                When you use a mobile app to check weather, book a ride, or order food - 
-                                that app is using APIs to fetch data from servers. The app (client) asks 
-                                the API for data, and the API returns it.
+                            <!-- Constrained video container -->
+                            <div class="max-w-2xl mx-auto">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-lg">
+                                    <div class="relative" style="padding-bottom: 56.25%; height: 0;">
+                                        <iframe 
+                                            src="https://drive.google.com/file/d/1RFVCFUyu-oEkuwLyK9ip_hybJZDFmxbt/preview" 
+                                            class="absolute top-0 left-0 w-full h-full border-0"
+                                            allow="autoplay"
+                                            loading="lazy">
+                                        </iframe>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-purple-700 mt-2 text-center">
+                                💡 This 3-minute video explains client-server communication in simple terms!
                             </p>
                         </div>
                         
-                        <div class="bg-green-50 p-3 rounded text-xs">
-                            <p class="font-bold text-green-800 mb-1">✨ Real Example</p>
+                        <div class="mb-4">
+                            <p class="text-gray-700 mb-3 leading-relaxed text-base">
+                                An <strong>API</strong> is like a <strong>magic mailbox</strong> that apps use to talk to each other!
+                            </p>
+                            
+                            <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-2 border-blue-300 mb-4">
+                                <p class="text-sm font-bold text-blue-800 mb-3">📮 Imagine you have a magic mailbox...</p>
+                                <div class="space-y-3 text-sm text-gray-800">
+                                    <div class="flex items-start">
+                                        <span class="text-2xl mr-3">📝</span>
+                                        <div>
+                                            <strong>1. You write a note:</strong><br>
+                                            "Dear Santa, I want a puppy for Christmas!"
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="text-2xl mr-3">📬</span>
+                                        <div>
+                                            <strong>2. You put it in the mailbox</strong><br>
+                                            The mailbox magically delivers it to the North Pole
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="text-2xl mr-3">🎁</span>
+                                        <div>
+                                            <strong>3. Santa sends a reply back:</strong><br>
+                                            "Ho ho ho! I got your letter. Puppy coming soon!"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p class="text-gray-700 mb-3 leading-relaxed">
+                                <strong>That's exactly what an API does!</strong> Your app writes a note (request), 
+                                sends it through the API (magic mailbox), and gets an answer back (response).
+                            </p>
+                        </div>
+                        
+                        <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400 mb-3">
+                            <p class="font-bold text-yellow-800 mb-2">🎮 Real-Life Example</p>
+                            <p class="text-yellow-900 text-sm">
+                                When you ask your phone <strong>"Hey Siri, what's the weather?"</strong><br><br>
+                                🗣️ Your phone sends a note through an API: "Give me today's weather"<br>
+                                ☁️ The weather company's computer sends back: "It's sunny, 75°F!"<br>
+                                📱 Siri reads it to you: "It's sunny and 75 degrees!"
+                            </p>
+                        </div>
+
+                        <div class="bg-green-50 p-4 rounded-lg text-sm mb-4">
+                            <p class="font-bold text-green-800 mb-2">💡 Why Do We Need APIs?</p>
                             <p class="text-green-700">
-                                When you search "Pizza near me" on Google Maps, your phone sends a request to 
-                                Google's API asking "Give me pizza restaurants near [your location]". 
-                                The API searches the database and sends back a list of pizza places!
+                                Imagine if every app had to store ALL information (weather, maps, videos, music) on YOUR phone! 
+                                Your phone would need to be as big as a refrigerator! 😱<br><br>
+                                Instead, apps use APIs to ask other computers for information when you need it. 
+                                It's like asking a friend for their toy instead of buying every toy yourself!
+                            </p>
+                        </div>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2 text-base">📱 Real Apps You Use Every Day!</p>
+                            <div class="space-y-3 text-sm">
+                                <div class="bg-white p-3 rounded-lg border border-indigo-200">
+                                    <p class="font-bold text-indigo-700">🎮 When you play a game online:</p>
+                                    <p class="text-gray-700">The game uses an API to save your high score on the game company's computer!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-indigo-200">
+                                    <p class="font-bold text-indigo-700">📺 When you watch YouTube:</p>
+                                    <p class="text-gray-700">The app uses an API to ask YouTube's computers "Please send me this cat video!"</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-indigo-200">
+                                    <p class="font-bold text-indigo-700">🍕 When your parents order food on DoorDash:</p>
+                                    <p class="text-gray-700">The app uses an API to tell the restaurant "Someone wants pizza!"</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-indigo-200">
+                                    <p class="font-bold text-indigo-700">💬 When you send a text message:</p>
+                                    <p class="text-gray-700">Your phone uses an API to send the message to your friend's phone!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                            <p class="font-bold text-blue-800 mb-2">📚 Important Words to Know</p>
+                            <div class="space-y-2 text-sm text-blue-900">
+                                <div><strong>API:</strong> The messenger that carries information between apps and computers</div>
+                                <div><strong>Request:</strong> When you ASK for something (like asking for ice cream)</div>
+                                <div><strong>Response:</strong> When you GET an answer back (getting the ice cream!)</div>
+                                <div><strong>Server:</strong> A powerful computer that stores information and answers requests</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Client vs Server & Request/Response (Combined Holistic Lesson) -->
+                    <div x-show="activeLesson === 'client-server'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">💻 How Apps Talk to Each Other</h3>
+                        
+                        <p class="text-gray-700 mb-4 text-base leading-relaxed">
+                            Every time you use an app, there's a <strong>conversation</strong> happening between your device 
+                            and a computer somewhere else! Let's learn how this works.
+                        </p>
+
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300 mb-4">
+                            <p class="font-bold text-purple-800 mb-3 text-base">🎭 The Two Main Characters</p>
+                            
+                            <div class="space-y-3">
+                                <div class="bg-white p-4 rounded-lg border-2 border-blue-300">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-3xl mr-3">📱</span>
+                                        <div>
+                                            <p class="font-bold text-blue-700 text-base">CLIENT = You (The Asker)</p>
+                                            <p class="text-xs text-gray-600">Your phone, computer, or tablet</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-800">
+                                        The CLIENT is the one who ASKS for things. It's your device running the app!
+                                    </p>
+                                </div>
+
+                                <div class="bg-white p-4 rounded-lg border-2 border-green-300">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-3xl mr-3">🖥️</span>
+                                        <div>
+                                            <p class="font-bold text-green-700 text-base">SERVER = The Helper (The Answerer)</p>
+                                            <p class="text-xs text-gray-600">Big computer in a data center</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-800">
+                                        The SERVER is the one who ANSWERS requests. It has all the data and does the work!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400 mb-4">
+                            <p class="font-bold text-yellow-800 mb-2 text-base">🏪 Real-World Example: Ordering at a Store</p>
+                            <div class="space-y-3 text-sm text-yellow-900">
+                                <div class="bg-white p-3 rounded-lg border border-yellow-200">
+                                    <p class="font-bold mb-1">👤 YOU are the CLIENT</p>
+                                    <p class="text-xs">You walk into an ice cream shop and say: "Can I have chocolate ice cream?"</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-yellow-200">
+                                    <p class="font-bold mb-1">👨‍🍳 SHOPKEEPER is the SERVER</p>
+                                    <p class="text-xs">They hear your request, get the ice cream from the freezer, and hand it to you!</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-yellow-800 mt-3">
+                                <strong>That's exactly how apps work!</strong> Your phone (client) asks, the server answers!
+                            </p>
+                        </div>
+
+                        <h4 class="font-bold text-base mb-3 text-gray-800">↔️ The Conversation: REQUEST and RESPONSE</h4>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2">📚 Definitions</p>
+                            <div class="space-y-2 text-sm text-indigo-900">
+                                <div class="bg-white p-2 rounded border border-indigo-200">
+                                    <strong>REQUEST:</strong> When the client ASKS for something (like "Give me videos")
+                                </div>
+                                <div class="bg-white p-2 rounded border border-indigo-200">
+                                    <strong>RESPONSE:</strong> When the server ANSWERS with data (like sending the videos)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border-2 border-blue-400 mb-4">
+                            <p class="font-bold text-blue-800 mb-3 text-base">📱 Complete Example: Watching a TikTok Video</p>
+                            
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold mr-3">1</div>
+                                    <div class="bg-white p-3 rounded-lg border border-blue-200 flex-1">
+                                        <p class="font-bold text-blue-700 mb-1">📱 CLIENT (Your Phone)</p>
+                                        <p class="text-sm text-gray-700">You open TikTok app and scroll to find a video</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold mr-3">2</div>
+                                    <div class="bg-white p-3 rounded-lg border border-purple-200 flex-1">
+                                        <p class="font-bold text-purple-700 mb-1">➡️ REQUEST (The Ask)</p>
+                                        <p class="text-sm text-gray-700">Your phone sends a request: "Hey TikTok server, send me the next funny cat video!"</p>
+                                        <div class="bg-purple-50 p-2 rounded mt-2 text-xs font-mono">
+                                            GET /api/videos/next
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold mr-3">3</div>
+                                    <div class="bg-white p-3 rounded-lg border border-green-200 flex-1">
+                                        <p class="font-bold text-green-700 mb-1">🖥️ SERVER (TikTok's Computer)</p>
+                                        <p class="text-sm text-gray-700">TikTok's big computer receives your request and finds a cat video in its database</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold mr-3">4</div>
+                                    <div class="bg-white p-3 rounded-lg border border-orange-200 flex-1">
+                                        <p class="font-bold text-orange-700 mb-1">⬅️ RESPONSE (The Answer)</p>
+                                        <p class="text-sm text-gray-700">Server sends back the video data to your phone</p>
+                                        <div class="bg-orange-50 p-2 rounded mt-2 text-xs font-mono">
+                                            200 OK + video data
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold mr-3">5</div>
+                                    <div class="bg-white p-3 rounded-lg border border-pink-200 flex-1">
+                                        <p class="font-bold text-pink-700 mb-1">📱 CLIENT Shows It!</p>
+                                        <p class="text-sm text-gray-700">Your phone plays the video on your screen. You see the funny cat! 🐱</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-400 mb-4">
+                            <p class="font-bold text-green-800 mb-3 text-base">🌍 More Real-Life Examples</p>
+                            
+                            <div class="space-y-3 text-sm">
+                                <div class="bg-white p-3 rounded-lg border border-green-200">
+                                    <p class="font-bold text-green-700 mb-2">📧 Checking Email</p>
+                                    <div class="space-y-1 text-xs text-gray-700">
+                                        <div>📱 <strong>CLIENT:</strong> Your email app on phone</div>
+                                        <div>➡️ <strong>REQUEST:</strong> "Give me my new emails"</div>
+                                        <div>🖥️ <strong>SERVER:</strong> Gmail's computer finds your emails</div>
+                                        <div>⬅️ <strong>RESPONSE:</strong> Sends back 5 new emails</div>
+                                        <div>✅ <strong>RESULT:</strong> You see "You have 5 new messages!"</div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-3 rounded-lg border border-green-200">
+                                    <p class="font-bold text-green-700 mb-2">🎮 Playing Fortnite Online</p>
+                                    <div class="space-y-1 text-xs text-gray-700">
+                                        <div>🎮 <strong>CLIENT:</strong> Your PlayStation or Xbox</div>
+                                        <div>➡️ <strong>REQUEST:</strong> "Where are other players right now?"</div>
+                                        <div>🖥️ <strong>SERVER:</strong> Fortnite game server tracks all players</div>
+                                        <div>⬅️ <strong>RESPONSE:</strong> Sends positions of 99 other players</div>
+                                        <div>✅ <strong>RESULT:</strong> You see other players moving on your screen!</div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-3 rounded-lg border border-green-200">
+                                    <p class="font-bold text-green-700 mb-2">🛒 Buying Something on Amazon</p>
+                                    <div class="space-y-1 text-xs text-gray-700">
+                                        <div>💻 <strong>CLIENT:</strong> Amazon website in your browser</div>
+                                        <div>➡️ <strong>REQUEST:</strong> "Add this toy to my shopping cart"</div>
+                                        <div>🖥️ <strong>SERVER:</strong> Amazon's computer updates your cart</div>
+                                        <div>⬅️ <strong>RESPONSE:</strong> "Success! Cart now has 1 item"</div>
+                                        <div>✅ <strong>RESULT:</strong> You see cart icon change to "1"</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-pink-50 p-4 rounded-lg border-l-4 border-pink-400 mb-4">
+                            <p class="font-bold text-pink-800 mb-2 text-base">❓ Why Do We Need This?</p>
+                            <div class="space-y-2 text-sm text-pink-900">
+                                <div class="flex items-start">
+                                    <span class="mr-2">💾</span>
+                                    <div>
+                                        <strong>Saves Space:</strong> Your phone doesn't need to store ALL of YouTube's videos! 
+                                        The server has them, and sends you only what you need.
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">🔄</span>
+                                    <div>
+                                        <strong>Always Updated:</strong> When someone posts a new photo on Instagram, 
+                                        it goes to the server. Everyone can see it immediately!
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">👥</span>
+                                    <div>
+                                        <strong>Share Data:</strong> The server stores your game progress. 
+                                        You can play on phone, then continue on computer!
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">🔒</span>
+                                    <div>
+                                        <strong>Keep It Safe:</strong> Your photos on iCloud? Stored on Apple's servers. 
+                                        If you lose your phone, photos are still safe!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-400">
+                            <p class="font-bold text-blue-800 mb-3 text-base">🎯 Quick Summary</p>
+                            <table class="w-full text-sm">
+                                <thead class="bg-blue-100">
+                                    <tr>
+                                        <th class="p-2 text-left border border-blue-200">Part</th>
+                                        <th class="p-2 text-left border border-blue-200">What It Does</th>
+                                        <th class="p-2 text-left border border-blue-200">Real Life</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">📱 CLIENT</td>
+                                        <td class="p-2 border border-blue-200">Asks for things</td>
+                                        <td class="p-2 border border-blue-200">You at the store</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">➡️ REQUEST</td>
+                                        <td class="p-2 border border-blue-200">The question</td>
+                                        <td class="p-2 border border-blue-200">"Can I have ice cream?"</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">🖥️ SERVER</td>
+                                        <td class="p-2 border border-blue-200">Has data, does work</td>
+                                        <td class="p-2 border border-blue-200">Shop with freezer</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">⬅️ RESPONSE</td>
+                                        <td class="p-2 border border-blue-200">The answer</td>
+                                        <td class="p-2 border border-blue-200">"Here's your ice cream!"</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Video Section at the end -->
+                        <div class="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">🎬</span>
+                                <p class="font-bold text-purple-800 text-base">Watch: Visual Explanation</p>
+                            </div>
+                            <!-- Constrained video container -->
+                            <div class="max-w-2xl mx-auto">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-lg">
+                                    <div class="relative" style="padding-bottom: 56.25%; height: 0;">
+                                        <iframe 
+                                            src="https://drive.google.com/file/d/1RFVCFUyu-oEkuwLyK9ip_hybJZDFmxbt/preview" 
+                                            class="absolute top-0 left-0 w-full h-full border-0"
+                                            allow="autoplay"
+                                            loading="lazy">
+                                        </iframe>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-purple-700 mt-2 text-center">
+                                💡 This video shows the entire client-server request-response cycle with Instagram examples!
                             </p>
                         </div>
                     </div>
-                    
+
+
                     <!-- HTTP Methods -->
                     <div x-show="activeLesson === 'http'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔧 HTTP Methods</h3>
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔧 Different Types of Requests</h3>
                         
-                        <p class="text-gray-700 mb-3 leading-relaxed">
-                            HTTP methods tell the server what action you want to perform. Think of them as different types of requests you make:
+                        <p class="text-gray-700 mb-3 leading-relaxed text-base">
+                            When you send a note through the magic mailbox (API), you need to tell it what you want to do. 
+                            These are like <strong>special commands</strong> you can use:
                         </p>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2">📚 Definition</p>
+                            <p class="text-indigo-900 text-sm">
+                                <strong>HTTP Method:</strong> A special command that tells the computer what action you want to do - 
+                                like "show me", "create new", "update", or "delete". It's like verbs in a sentence!
+                            </p>
+                        </div>
                         
                         <!-- GET -->
-                        <div class="mb-3 bg-blue-50 p-3 rounded border-l-4 border-blue-500">
+                        <div class="mb-3 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
                             <div class="flex items-center mb-2">
-                                <span class="font-bold text-blue-700 text-sm">GET</span>
-                                <span class="ml-2 px-2 py-0.5 bg-blue-200 text-blue-800 text-xs rounded">Read/Retrieve</span>
+                                <span class="text-2xl mr-2">📖</span>
+                                <span class="font-bold text-blue-700 text-base">GET = "Show Me"</span>
                             </div>
-                            <p class="text-xs text-gray-700 mb-2">
-                                <strong>Purpose:</strong> Fetch data without changing anything
+                            <p class="text-sm text-gray-800 mb-3">
+                                <strong>What it does:</strong> Shows you information without changing anything
                             </p>
-                            <p class="text-xs text-gray-600 mb-2">
-                                📖 <strong>Analogy:</strong> Reading a book from the library - you don't change the book, just view it
-                            </p>
-                            <div class="bg-white p-2 rounded text-xs font-mono">
-                                <div class="mb-1">GET /api/todos - Get all todos</div>
-                                <div>GET /api/todos/5 - Get todo with ID 5</div>
+                            <div class="bg-white p-3 rounded-lg mb-2 border border-blue-200">
+                                <p class="text-sm font-bold text-blue-800 mb-2">🧸 Like asking your friend:</p>
+                                <p class="text-sm text-gray-700">"Can I <strong>SEE</strong> your toy box?"</p>
+                                <p class="text-xs text-gray-500 mt-1">→ Your friend shows you the toys, but you don't take any or change anything</p>
+                            </div>
+                            <div class="bg-blue-100 p-2 rounded text-xs font-mono">
+                                <div class="mb-1">GET /api/todos → "Show me all my tasks"</div>
+                                <div>GET /api/todos/5 → "Show me task #5"</div>
                             </div>
                         </div>
                         
                         <!-- POST -->
-                        <div class="mb-3 bg-green-50 p-3 rounded border-l-4 border-green-500">
+                        <div class="mb-3 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
                             <div class="flex items-center mb-2">
-                                <span class="font-bold text-green-700 text-sm">POST</span>
-                                <span class="ml-2 px-2 py-0.5 bg-green-200 text-green-800 text-xs rounded">Create</span>
+                                <span class="text-2xl mr-2">➕</span>
+                                <span class="font-bold text-green-700 text-base">POST = "Add New"</span>
                             </div>
-                            <p class="text-xs text-gray-700 mb-2">
-                                <strong>Purpose:</strong> Create a new resource
+                            <p class="text-sm text-gray-800 mb-3">
+                                <strong>What it does:</strong> Creates something brand new
                             </p>
-                            <p class="text-xs text-gray-600 mb-2">
-                                ✍️ <strong>Analogy:</strong> Adding a new contact to your phone - creates something new
-                            </p>
-                            <div class="bg-white p-2 rounded text-xs font-mono">
+                            <div class="bg-white p-3 rounded-lg mb-2 border border-green-200">
+                                <p class="text-sm font-bold text-green-800 mb-2">🎨 Like telling your art teacher:</p>
+                                <p class="text-sm text-gray-700">"I want to <strong>ADD</strong> a new drawing to the wall!"</p>
+                                <p class="text-xs text-gray-500 mt-1">→ Your teacher hangs up your new artwork. Now there's one more picture on the wall!</p>
+                            </div>
+                            <div class="bg-green-100 p-2 rounded text-xs font-mono">
                                 POST /api/todos<br>
-                                Body: {"title": "Buy milk", "completed": false}
+                                "Create a new task: Buy milk"
                             </div>
                         </div>
                         
                         <!-- PUT -->
-                        <div class="mb-3 bg-yellow-50 p-3 rounded border-l-4 border-yellow-500">
+                        <div class="mb-3 bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
                             <div class="flex items-center mb-2">
-                                <span class="font-bold text-yellow-700 text-sm">PUT</span>
-                                <span class="ml-2 px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs rounded">Full Update</span>
+                                <span class="text-2xl mr-2">🔄</span>
+                                <span class="font-bold text-yellow-700 text-base">PUT = "Replace Everything"</span>
                             </div>
-                            <p class="text-xs text-gray-700 mb-2">
-                                <strong>Purpose:</strong> Replace entire resource (send all fields)
+                            <p class="text-sm text-gray-800 mb-3">
+                                <strong>What it does:</strong> Throws away the old version and makes a completely new one
                             </p>
-                            <p class="text-xs text-gray-600 mb-2">
-                                ✏️ <strong>Analogy:</strong> Rewriting an entire contact card with all details
-                            </p>
-                            <div class="bg-white p-2 rounded text-xs font-mono">
+                            <div class="bg-white p-3 rounded-lg mb-2 border border-yellow-200">
+                                <p class="text-sm font-bold text-yellow-800 mb-2">🏗️ Like building with LEGO:</p>
+                                <p class="text-sm text-gray-700">"I'm going to <strong>REBUILD</strong> my LEGO castle from scratch!"</p>
+                                <p class="text-xs text-gray-500 mt-1">→ You knock down the whole castle and build a new one. Everything changes!</p>
+                            </div>
+                            <div class="bg-yellow-100 p-2 rounded text-xs font-mono">
                                 PUT /api/todos/5<br>
-                                Body: {"title": "Buy milk", "completed": true, "description": "From store"}
+                                "Replace task #5 with this new version"
                             </div>
                         </div>
                         
                         <!-- PATCH -->
-                        <div class="mb-3 bg-orange-50 p-3 rounded border-l-4 border-orange-500">
+                        <div class="mb-3 bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
                             <div class="flex items-center mb-2">
-                                <span class="font-bold text-orange-700 text-sm">PATCH</span>
-                                <span class="ml-2 px-2 py-0.5 bg-orange-200 text-orange-800 text-xs rounded">Partial Update</span>
+                                <span class="text-2xl mr-2">✏️</span>
+                                <span class="font-bold text-orange-700 text-base">PATCH = "Fix Just One Part"</span>
                             </div>
-                            <p class="text-xs text-gray-700 mb-2">
-                                <strong>Purpose:</strong> Update only specific fields (not the whole resource)
+                            <p class="text-sm text-gray-800 mb-3">
+                                <strong>What it does:</strong> Changes only one small thing, keeps everything else the same
                             </p>
-                            <p class="text-xs text-gray-600 mb-2">
-                                🔧 <strong>Analogy:</strong> Only changing a contact's phone number, leaving everything else untouched
-                            </p>
-                            <div class="bg-white p-2 rounded text-xs font-mono">
+                            <div class="bg-white p-3 rounded-lg mb-2 border border-orange-200">
+                                <p class="text-sm font-bold text-orange-800 mb-2">🩹 Like putting a band-aid on:</p>
+                                <p class="text-sm text-gray-700">"My toy robot's arm is broken - let me <strong>FIX JUST THE ARM</strong>!"</p>
+                                <p class="text-xs text-gray-500 mt-1">→ You only fix the broken arm. The legs, head, and body stay the same!</p>
+                            </div>
+                            <div class="bg-orange-100 p-2 rounded text-xs font-mono">
                                 PATCH /api/todos/5<br>
-                                Body: {"completed": true}  ← Only update this field
+                                "Just mark task #5 as done (don't change anything else)"
                             </div>
                         </div>
                         
                         <!-- DELETE -->
-                        <div class="mb-3 bg-red-50 p-3 rounded border-l-4 border-red-500">
+                        <div class="mb-3 bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
                             <div class="flex items-center mb-2">
-                                <span class="font-bold text-red-700 text-sm">DELETE</span>
-                                <span class="ml-2 px-2 py-0.5 bg-red-200 text-red-800 text-xs rounded">Remove</span>
+                                <span class="text-2xl mr-2">🗑️</span>
+                                <span class="font-bold text-red-700 text-base">DELETE = "Throw Away"</span>
                             </div>
-                            <p class="text-xs text-gray-700 mb-2">
-                                <strong>Purpose:</strong> Delete a resource
+                            <p class="text-sm text-gray-800 mb-3">
+                                <strong>What it does:</strong> Removes something forever (be careful!)
                             </p>
-                            <p class="text-xs text-gray-600 mb-2">
-                                🗑️ <strong>Analogy:</strong> Deleting a contact from your phone - removes it permanently
-                            </p>
-                            <div class="bg-white p-2 rounded text-xs font-mono">
-                                DELETE /api/todos/5
+                            <div class="bg-white p-3 rounded-lg mb-2 border border-red-200">
+                                <p class="text-sm font-bold text-red-800 mb-2">🗑️ Like cleaning your room:</p>
+                                <p class="text-sm text-gray-700">"This broken crayon goes in the <strong>TRASH</strong>!"</p>
+                                <p class="text-xs text-gray-500 mt-1">→ Once it's in the trash, it's gone forever. No more broken crayon!</p>
+                            </div>
+                            <div class="bg-red-100 p-2 rounded text-xs font-mono">
+                                DELETE /api/todos/5<br>
+                                "Delete task #5 forever"
                             </div>
                         </div>
                         
-                        <div class="bg-purple-50 p-3 rounded text-xs mt-3">
-                            <p class="font-bold text-purple-800 mb-1">💡 Key Differences</p>
-                            <p class="text-purple-700 space-y-1">
-                                <div>• <strong>PUT vs PATCH:</strong> PUT replaces entire resource, PATCH updates specific fields</div>
-                                <div>• <strong>ID Required:</strong> PUT, PATCH, DELETE need resource ID in URL</div>
-                                <div>• <strong>POST:</strong> Creates new resources, server assigns ID</div>
-                            </p>
+                        <div class="bg-purple-50 p-4 rounded-lg text-sm mt-3 mb-4">
+                            <p class="font-bold text-purple-800 mb-2 text-base">🎯 Quick Reminder</p>
+                            <div class="text-purple-900 space-y-2">
+                                <div class="flex items-start">
+                                    <span class="mr-2">📖</span>
+                                    <span><strong>GET:</strong> Look but don't touch!</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">➕</span>
+                                    <span><strong>POST:</strong> Make something new!</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">🔄</span>
+                                    <span><strong>PUT:</strong> Replace the whole thing!</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">✏️</span>
+                                    <span><strong>PATCH:</strong> Fix just one part!</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">🗑️</span>
+                                    <span><strong>DELETE:</strong> Throw it away!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-lg border-2 border-pink-300">
+                            <p class="font-bold text-pink-800 mb-3 text-base">🌍 Real Apps Using These Commands!</p>
+                            <div class="space-y-3 text-sm">
+                                <div class="bg-white p-3 rounded-lg border border-pink-200">
+                                    <p class="font-bold text-blue-700">📖 GET - Instagram feed</p>
+                                    <p class="text-gray-700 text-xs">When you scroll Instagram, it uses GET to show you posts without changing anything!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-pink-200">
+                                    <p class="font-bold text-green-700">➕ POST - Posting on TikTok</p>
+                                    <p class="text-gray-700 text-xs">When you upload a new dance video, TikTok uses POST to create something new!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-pink-200">
+                                    <p class="font-bold text-yellow-700">🔄 PUT - Changing your profile picture</p>
+                                    <p class="text-gray-700 text-xs">When you completely replace your profile photo, apps use PUT!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-pink-200">
+                                    <p class="font-bold text-orange-700">✏️ PATCH - Liking a YouTube video</p>
+                                    <p class="text-gray-700 text-xs">YouTube uses PATCH to just change the like count without touching anything else!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-pink-200">
+                                    <p class="font-bold text-red-700">🗑️ DELETE - Deleting a Snapchat message</p>
+                                    <p class="text-gray-700 text-xs">When you delete a snap, it uses DELETE to remove it forever!</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Status Codes -->
                     <div x-show="activeLesson === 'status'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">📊 HTTP Status Codes</h3>
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">📊 Did It Work? (Status Codes)</h3>
                         
-                        <p class="text-gray-700 mb-3 text-xs leading-relaxed">
-                            Status codes are like report cards for your API requests. They tell you if your request was successful or what went wrong.
+                        <p class="text-gray-700 mb-3 text-base leading-relaxed">
+                            After you send a request through the magic mailbox, you get a <strong>number</strong> that tells you what happened. 
+                            Think of it like getting a sticker after you ask for something!
                         </p>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2">📚 Definition</p>
+                            <p class="text-indigo-900 text-sm">
+                                <strong>Status Code:</strong> A 3-digit number (like 200, 404, or 500) that the computer sends back 
+                                to tell you if your request worked or what went wrong. It's like a report card for your request!
+                            </p>
+                        </div>
                         
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             <!-- 2xx Success -->
-                            <div class="bg-green-50 p-3 rounded border-l-4 border-green-500">
-                                <div class="font-bold text-green-700 mb-2 text-sm">✅ 2xx - Success</div>
-                                <div class="space-y-1 text-xs">
-                                    <div><strong class="text-green-700">200 OK:</strong> Request succeeded, here's your data</div>
-                                    <div><strong class="text-green-700">201 Created:</strong> New resource created successfully</div>
-                                    <div><strong class="text-green-700">204 No Content:</strong> Success but no data to return (e.g., after DELETE)</div>
+                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-400">
+                                <div class="flex items-center mb-3">
+                                    <span class="text-3xl mr-3">✅</span>
+                                    <div>
+                                        <div class="font-bold text-green-800 text-base">2xx = "Yay! It Worked!"</div>
+                                        <div class="text-xs text-green-600">Like getting a gold star ⭐</div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="bg-white p-2 rounded border border-green-200">
+                                        <strong class="text-green-700">200:</strong> "Here's what you asked for!" 🎁
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-green-200">
+                                        <strong class="text-green-700">201:</strong> "I made the new thing you wanted!" 🎨
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-green-200">
+                                        <strong class="text-green-700">204:</strong> "Done! (But I have nothing to show you)" ✓
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 3xx Redirects -->
+                            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border-2 border-blue-400">
+                                <div class="flex items-center mb-3">
+                                    <span class="text-3xl mr-3">🔄</span>
+                                    <div>
+                                        <div class="font-bold text-blue-800 text-base">3xx = "Go Over There!"</div>
+                                        <div class="text-xs text-blue-600">Like being redirected to a different room 🚪</div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="bg-white p-2 rounded border border-blue-200">
+                                        <strong class="text-blue-700">301:</strong> "That moved permanently to a new address!" 📦
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-blue-200">
+                                        <strong class="text-blue-700">302:</strong> "It's temporarily somewhere else, check there!" 🔀
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-blue-200">
+                                        <strong class="text-blue-700">304:</strong> "You already have the latest version!" ♻️
+                                    </div>
                                 </div>
                             </div>
                             
                             <!-- 4xx Client Errors -->
-                            <div class="bg-orange-50 p-3 rounded border-l-4 border-orange-500">
-                                <div class="font-bold text-orange-700 mb-2 text-sm">⚠️ 4xx - Your Mistake</div>
-                                <div class="space-y-1 text-xs">
-                                    <div><strong class="text-orange-700">400 Bad Request:</strong> Your data is malformed/invalid</div>
-                                    <div><strong class="text-orange-700">401 Unauthorized:</strong> You need to login first</div>
-                                    <div><strong class="text-orange-700">403 Forbidden:</strong> You're logged in but don't have permission</div>
-                                    <div><strong class="text-orange-700">404 Not Found:</strong> The resource doesn't exist</div>
-                                    <div><strong class="text-orange-700">405 Method Not Allowed:</strong> Wrong HTTP method for this endpoint</div>
-                                    <div><strong class="text-orange-700">422 Unprocessable:</strong> Data validation failed</div>
+                            <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-4 rounded-lg border-2 border-orange-400">
+                                <div class="flex items-center mb-3">
+                                    <span class="text-3xl mr-3">⚠️</span>
+                                    <div>
+                                        <div class="font-bold text-orange-800 text-base">4xx = "Oops! You Made a Mistake"</div>
+                                        <div class="text-xs text-orange-600">Like when teacher says "Try again!"</div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="bg-white p-2 rounded border border-orange-200">
+                                        <strong class="text-orange-700">400:</strong> "Your request doesn't make sense!" 🤔
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-orange-200">
+                                        <strong class="text-orange-700">401:</strong> "Who are you? You need to log in first!" 🔒
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-orange-200">
+                                        <strong class="text-orange-700">404:</strong> "I can't find what you're looking for!" 🔍
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-orange-200">
+                                        <strong class="text-orange-700">405:</strong> "You can't do THAT here!" 🚫
+                                    </div>
                                 </div>
                             </div>
                             
                             <!-- 5xx Server Errors -->
-                            <div class="bg-red-50 p-3 rounded border-l-4 border-red-500">
-                                <div class="font-bold text-red-700 mb-2 text-sm">❌ 5xx - Server's Problem</div>
-                                <div class="space-y-1 text-xs">
-                                    <div><strong class="text-red-700">500 Internal Server Error:</strong> Server crashed/bug</div>
-                                    <div><strong class="text-red-700">502 Bad Gateway:</strong> Server got invalid response from upstream</div>
-                                    <div><strong class="text-red-700">503 Service Unavailable:</strong> Server is down/overloaded</div>
+                            <div class="bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-lg border-2 border-red-400">
+                                <div class="flex items-center mb-3">
+                                    <span class="text-3xl mr-3">❌</span>
+                                    <div>
+                                        <div class="font-bold text-red-800 text-base">5xx = "Sorry! Something Broke on Our Side"</div>
+                                        <div class="text-xs text-red-600">Like when the toy breaks - not your fault!</div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="bg-white p-2 rounded border border-red-200">
+                                        <strong class="text-red-700">500:</strong> "Uh oh! The computer crashed!" 💥
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-red-200">
+                                        <strong class="text-red-700">503:</strong> "We're too busy right now, try later!" 😓
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-blue-50 p-3 rounded text-xs mt-3">
-                            <p class="font-bold text-blue-800 mb-1">🎯 Quick Tip</p>
-                            <p class="text-blue-700">
-                                <strong>4xx errors = You need to fix your request</strong><br>
-                                <strong>5xx errors = Wait or contact server admin</strong>
-                            </p>
+                        <div class="bg-blue-50 p-4 rounded-lg text-sm mt-4 border-l-4 border-blue-400 mb-4">
+                            <p class="font-bold text-blue-800 mb-2">🎯 Easy Way to Remember:</p>
+                            <div class="text-blue-900 space-y-1">
+                                <div>✅ <strong>2xx = Happy face!</strong> Everything worked!</div>
+                                <div>🔄 <strong>3xx = Follow me!</strong> Go to a different address!</div>
+                                <div>⚠️ <strong>4xx = You made a boo-boo.</strong> Fix your request and try again!</div>
+                                <div>❌ <strong>5xx = Computer is sad.</strong> Wait a bit and try again later!</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-cyan-50 to-sky-50 p-4 rounded-lg border-2 border-cyan-300">
+                            <p class="font-bold text-cyan-800 mb-3 text-base">📱 Have You Seen These Before?</p>
+                            <div class="space-y-3 text-sm">
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-green-700">✅ 200 - "Success!"</p>
+                                    <p class="text-gray-700 text-xs">When Netflix loads your favorite show - that's a 200 OK!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-blue-700">🔄 301 - "Moved Permanently"</p>
+                                    <p class="text-gray-700 text-xs">When a website changes its address, it redirects you. Like when a store moves to a new location!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-orange-700">⚠️ 404 - "Page Not Found"</p>
+                                    <p class="text-gray-700 text-xs">Ever click a broken link? That's a 404 error - the page doesn't exist!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-orange-700">⚠️ 401 - "Please Log In"</p>
+                                    <p class="text-gray-700 text-xs">Try to watch private videos on YouTube? You get 401 - you need to log in first!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-red-700">❌ 500 - "Website Crashed"</p>
+                                    <p class="text-gray-700 text-xs">When a website shows "Something went wrong" - that's usually a 500 error!</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-red-700">❌ 503 - "Too Busy!"</p>
+                                    <p class="text-gray-700 text-xs">During big sales (like Black Friday), websites get 503 errors - too many people shopping!</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- JSON -->
                     <div x-show="activeLesson === 'json'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">📦 Understanding JSON</h3>
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">📦 How Do We Write the Messages? (JSON)</h3>
                         
-                        <p class="text-gray-700 mb-3 text-xs leading-relaxed">
-                            <strong>JSON</strong> (JavaScript Object Notation) is the language APIs use to exchange data. 
-                            Think of it as a digital form with labeled boxes.
+                        <p class="text-gray-700 mb-3 text-base leading-relaxed">
+                            When you send a note through the magic mailbox, you need to write it in a special way 
+                            so the computer can read it. It's like filling out a form with your name, age, and favorite color!
                         </p>
-                        
-                        <div class="bg-blue-50 p-3 rounded mb-3">
-                            <p class="font-bold text-blue-800 text-xs mb-2">📋 Example: A Todo Item</p>
-                            <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
-  "id": 1,
-  "title": "Buy groceries",
-  "completed": false,
-  "created_at": "2024-01-15"
-}</pre>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2">📚 Definition</p>
+                            <p class="text-indigo-900 text-sm">
+                                <strong>JSON:</strong> A special way of organizing information so computers can understand it. 
+                                Think of it like a recipe card with labeled ingredients - everything has a name and a value!
+                            </p>
                         </div>
                         
-                        <div class="space-y-2 text-xs mb-3">
-                            <div class="flex items-start">
-                                <span class="text-blue-600 font-bold mr-2">•</span>
-                                <span><strong>"id": 1</strong> - A number (no quotes)</span>
-                            </div>
-                            <div class="flex items-start">
-                                <span class="text-green-600 font-bold mr-2">•</span>
-                                <span><strong>"title": "..."</strong> - A string (text in quotes)</span>
-                            </div>
-                            <div class="flex items-start">
-                                <span class="text-purple-600 font-bold mr-2">•</span>
-                                <span><strong>"completed": false</strong> - A boolean (true/false)</span>
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border-2 border-blue-400 mb-4">
+                            <p class="font-bold text-blue-800 text-sm mb-3">📝 Example: A Task (like a to-do list item)</p>
+                            <div class="bg-white p-3 rounded-lg border-2 border-blue-200">
+                                <pre class="text-sm text-gray-800"><span class="text-gray-500">{</span>
+  <span class="text-purple-600">"id"</span>: <span class="text-blue-600">1</span>,
+  <span class="text-purple-600">"title"</span>: <span class="text-green-600">"Buy ice cream"</span>,
+  <span class="text-purple-600">"completed"</span>: <span class="text-orange-600">false</span>
+<span class="text-gray-500">}</span></pre>
                             </div>
                         </div>
                         
-                        <div class="bg-yellow-50 p-3 rounded text-xs mb-3">
-                            <p class="font-bold text-yellow-800 mb-1">⚠️ Common Mistakes</p>
-                            <div class="space-y-1 text-yellow-700">
-                                <div>❌ Missing quotes around keys: {id: 1} ← Wrong!</div>
-                                <div>✅ Always use double quotes: {"id": 1} ← Correct!</div>
-                                <div>❌ Trailing commas: {"id": 1,} ← Wrong!</div>
-                                <div>✅ No comma after last item: {"id": 1} ← Correct!</div>
+                        <div class="mb-4">
+                            <p class="font-bold text-gray-800 mb-2">🎨 What Do The Colors Mean?</p>
+                            <div class="space-y-2 text-sm">
+                                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                    <div class="flex items-center">
+                                        <span class="text-2xl mr-3">🔢</span>
+                                        <div>
+                                            <div class="font-bold text-blue-700">"id": 1</div>
+                                            <div class="text-xs text-gray-600">A number (like counting: 1, 2, 3...)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+                                    <div class="flex items-center">
+                                        <span class="text-2xl mr-3">📝</span>
+                                        <div>
+                                            <div class="font-bold text-green-700">"title": "Buy ice cream"</div>
+                                            <div class="text-xs text-gray-600">Words (always put words in "quotes")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                                    <div class="flex items-center">
+                                        <span class="text-2xl mr-3">✓✗</span>
+                                        <div>
+                                            <div class="font-bold text-orange-700">"completed": false</div>
+                                            <div class="text-xs text-gray-600">Yes/No answer (true = yes, false = no)</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="bg-green-50 p-3 rounded text-xs">
-                            <p class="font-bold text-green-800 mb-1">🎨 JSON Arrays</p>
-                            <p class="text-green-700 mb-2">You can have lists of items too:</p>
-                            <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded overflow-x-auto">[
-  {"id": 1, "title": "Task 1"},
-  {"id": 2, "title": "Task 2"}
-]</pre>
+                        <div class="bg-yellow-50 p-4 rounded-lg text-sm mb-3 border-l-4 border-yellow-400">
+                            <p class="font-bold text-yellow-800 mb-2">⚠️ Important Rules!</p>
+                            <div class="space-y-2 text-yellow-900">
+                                <div class="flex items-start">
+                                    <span class="mr-2">1️⃣</span>
+                                    <span>Always put "labels" in quotes: <code class="bg-yellow-200 px-1 rounded">"title"</code> not <code class="bg-red-200 px-1 rounded">title</code></span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">2️⃣</span>
+                                    <span>Put commas between items (but NOT after the last one!)</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">3️⃣</span>
+                                    <span>Use curly brackets { } to wrap everything like a present! 🎁</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg text-sm border-2 border-purple-300 mb-4">
+                            <p class="font-bold text-purple-800 mb-2">🎒 Making a List (Multiple Items)</p>
+                            <p class="text-purple-700 mb-2">Sometimes you want to send multiple things, like a shopping list:</p>
+                            <div class="bg-white p-3 rounded border border-purple-200">
+                                <pre class="text-xs text-gray-800"><span class="text-gray-500">[</span>
+  {<span class="text-purple-600">"item"</span>: <span class="text-green-600">"Ice cream"</span>},
+  {<span class="text-purple-600">"item"</span>: <span class="text-green-600">"Cookies"</span>},
+  {<span class="text-purple-600">"item"</span>: <span class="text-green-600">"Candy"</span>}
+<span class="text-gray-500">]</span></pre>
+                            </div>
+                            <p class="text-xs text-purple-600 mt-2">Use [ ] square brackets for lists!</p>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-lg border-2 border-teal-300">
+                            <p class="font-bold text-teal-800 mb-3 text-base">🌍 JSON in Real Life!</p>
+                            <div class="space-y-3 text-sm">
+                                <div class="bg-white p-3 rounded-lg border border-teal-200">
+                                    <p class="font-bold text-blue-700">📱 Your Contact List</p>
+                                    <p class="text-gray-700 text-xs mb-2">When you save a friend's phone number, your phone stores it as JSON:</p>
+                                    <pre class="text-xs bg-gray-50 p-2 rounded">{"name": "Sarah", "phone": "555-1234"}</pre>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-teal-200">
+                                    <p class="font-bold text-green-700">🛒 Amazon Shopping Cart</p>
+                                    <p class="text-gray-700 text-xs mb-2">When you add items to cart, Amazon sends JSON like this:</p>
+                                    <pre class="text-xs bg-gray-50 p-2 rounded">{"product": "Toy Car", "price": 15, "quantity": 2}</pre>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-teal-200">
+                                    <p class="font-bold text-red-700">▶️ YouTube Videos</p>
+                                    <p class="text-gray-700 text-xs mb-2">YouTube uses JSON to store video information:</p>
+                                    <pre class="text-xs bg-gray-50 p-2 rounded">{"title": "Funny Cats", "views": 1000000, "likes": 50000}</pre>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Authentication -->
                     <div x-show="activeLesson === 'auth'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔐 Authentication</h3>
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔐 How Do We Know It's YOU? (Authentication)</h3>
                         
-                        <p class="text-gray-700 mb-3 text-xs leading-relaxed">
-                            Authentication proves who you are. Like showing ID at a bank to access your account.
+                        <p class="text-gray-700 mb-4 text-base leading-relaxed">
+                            <strong>Authentication</strong> means proving who you are, like showing your ID card at school 
+                            or typing your password to unlock your iPad!
+                        </p>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2">📚 Definition</p>
+                            <p class="text-indigo-900 text-sm">
+                                <strong>Authentication:</strong> The way a computer checks that you are really YOU, 
+                                and not someone pretending to be you.
+                            </p>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-4 text-sm">
+                            APIs have TWO ways to check who you are. Let's learn both!
                         </p>
                         
                         <!-- Basic Auth -->
-                        <div class="mb-3 bg-orange-50 p-3 rounded border-l-4 border-orange-400">
-                            <div class="font-bold text-orange-700 mb-2">🔑 Basic Auth</div>
-                            <p class="text-xs text-gray-700 mb-2">
-                                Send your email and password with <em>every</em> request.
+                        <div class="mb-4 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-lg border-2 border-orange-400">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">🔑</span>
+                                <div class="font-bold text-orange-800 text-base">Method 1: Username & Password (Every Time)</div>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                You give your username and password <strong>EVERY SINGLE TIME</strong> you ask for something.
                             </p>
-                            <div class="bg-white p-2 rounded text-xs mb-2">
-                                <div class="font-mono">Authorization: Basic dGVzdHVzZXI6dGVzdDEyMw==</div>
-                                <div class="text-gray-500 mt-1">(This is base64 encoded "testuser:test123")</div>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-orange-200 mb-3">
+                                <p class="font-bold text-orange-800 text-sm mb-2">🏫 Real-World Example: School Library</p>
+                                <p class="text-sm text-gray-700">
+                                    Imagine EVERY time you want to borrow a book, you have to:<br>
+                                    1. Show your student ID card 📇<br>
+                                    2. Say your password out loud 🗣️<br>
+                                    3. Then get the book 📚<br><br>
+                                    Want another book? Show ID and password again! It gets annoying, right?
+                                </p>
                             </div>
-                            <div class="flex items-center text-xs">
-                                <span class="mr-2">👍</span>
-                                <span class="text-gray-600">Simple to understand</span>
+
+                            <div class="bg-orange-100 p-2 rounded text-xs mb-2">
+                                <div class="font-bold mb-1">What the computer sees:</div>
+                                <div class="font-mono">Username: testuser@apilab.dev</div>
+                                <div class="font-mono">Password: test123</div>
                             </div>
-                            <div class="flex items-center text-xs">
-                                <span class="mr-2">👎</span>
-                                <span class="text-gray-600">Less secure - sends credentials repeatedly</span>
+                            
+                            <div class="space-y-1 text-sm">
+                                <div class="flex items-center">
+                                    <span class="mr-2">👍</span>
+                                    <span class="text-gray-700">Easy to understand</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="mr-2">👎</span>
+                                    <span class="text-gray-700">You type your password over and over (risky!)</span>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Token Auth -->
-                        <div class="mb-3 bg-green-50 p-3 rounded border-l-4 border-green-400">
-                            <div class="font-bold text-green-700 mb-2">🎫 Token Auth (JWT)</div>
-                            <p class="text-xs text-gray-700 mb-2">
-                                Login once, get a token, reuse it for 24 hours.
+                        <div class="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-400">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">🎫</span>
+                                <div class="font-bold text-green-800 text-base">Method 2: Special Ticket (Token)</div>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                You log in ONCE and get a <strong>magic ticket</strong> that works for 24 hours!
                             </p>
-                            <div class="bg-white p-2 rounded text-xs mb-2 space-y-1">
-                                <div><strong>Step 1:</strong> POST /api/auth/login with credentials</div>
-                                <div><strong>Step 2:</strong> Get token: "eyJhbGciOiJIUzI1..."</div>
-                                <div><strong>Step 3:</strong> Use token in all requests:</div>
-                                <div class="font-mono ml-4">Authorization: Bearer eyJhbGci...</div>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-green-200 mb-3">
+                                <p class="font-bold text-green-800 text-sm mb-2">🎢 Real-World Example: Amusement Park Wristband</p>
+                                <p class="text-sm text-gray-700">
+                                    When you go to an amusement park:<br>
+                                    1. You buy a ticket at the entrance (log in once) 🎟️<br>
+                                    2. They give you a wristband 🎫<br>
+                                    3. Now you can ride ALL the rides without buying tickets again!<br>
+                                    4. The wristband works ALL DAY! ⏰<br><br>
+                                    At the end of the day, the wristband expires and you need a new one tomorrow.
+                                </p>
                             </div>
-                            <div class="flex items-center text-xs">
-                                <span class="mr-2">👍</span>
-                                <span class="text-gray-600">More secure</span>
+
+                            <div class="bg-green-100 p-3 rounded text-xs mb-2">
+                                <div class="font-bold mb-2">How it works:</div>
+                                <div class="space-y-1">
+                                    <div><strong>Step 1:</strong> Log in with username & password</div>
+                                    <div><strong>Step 2:</strong> Computer gives you a magic ticket (looks like random letters)</div>
+                                    <div class="font-mono text-xs bg-white p-1 rounded">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                                    <div><strong>Step 3:</strong> Use that ticket for everything (no more password needed!)</div>
+                                </div>
                             </div>
-                            <div class="flex items-center text-xs">
-                                <span class="mr-2">👍</span>
-                                <span class="text-gray-600">Industry standard (used by Facebook, Twitter, etc.)</span>
+                            
+                            <div class="space-y-1 text-sm">
+                                <div class="flex items-center">
+                                    <span class="mr-2">👍</span>
+                                    <span class="text-gray-700">Super secure! Password only used once</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="mr-2">👍</span>
+                                    <span class="text-gray-700">Faster! No typing password every time</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="mr-2">👍</span>
+                                    <span class="text-gray-700">Used by Instagram, TikTok, YouTube, and all big apps!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-400 mb-3">
+                            <p class="font-bold text-purple-800 mb-2">🌍 Real Companies Using These:</p>
+                            <div class="text-sm text-purple-900 space-y-2">
+                                <div>
+                                    <strong>🎫 Token Method:</strong><br>
+                                    → Facebook, Instagram, Twitter, Google, Spotify, Netflix
+                                </div>
+                                <div>
+                                    <strong>🔑 Password Method:</strong><br>
+                                    → Some old websites, simple internal tools
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="bg-blue-50 p-3 rounded text-xs">
-                            <p class="font-bold text-blue-800 mb-1">🎯 Which to Use?</p>
-                            <p class="text-blue-700">
-                                In this lab, use <strong>Token Auth</strong> for most experiments. 
-                                It's what real-world APIs use!
+                        <div class="bg-blue-50 p-4 rounded-lg text-sm border-2 border-blue-400">
+                            <p class="font-bold text-blue-800 mb-2">🎯 Which Should You Use?</p>
+                            <p class="text-blue-900">
+                                <strong>Use the Token Method!</strong> 🎫<br><br>
+                                It's safer, faster, and it's what all the cool apps use. In this lab, 
+                                we'll teach you how to get a token and use it like a pro!
                             </p>
                         </div>
                     </div>
@@ -475,17 +1173,24 @@
                     <div x-show="activeLesson === 'examples'">
                         <h3 class="font-bold text-lg mb-3 text-blue-700">💻 Practical Examples</h3>
                         
-                        <p class="text-gray-700 mb-3 text-xs">
-                            Copy these commands and try them in Postman or your terminal!
-                        </p>
+                        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border-2 border-yellow-400 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl mr-2">📋</span>
+                                <p class="font-bold text-yellow-900 text-base">Try These Commands Yourself!</p>
+                            </div>
+                            <p class="text-yellow-800 text-sm">
+                                Copy these commands and paste them into <strong>Postman</strong> or your <strong>terminal</strong>. 
+                                You'll see real API responses!
+                            </p>
+                        </div>
                         
                         <!-- Example 1: Login -->
                         <div class="mb-4 bg-gray-50 p-3 rounded">
                             <div class="font-bold text-sm mb-2">1️⃣ Login to Get Token</div>
                             <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
-curl -X POST http://localhost:5001/api/auth/login \
+                                <pre class="font-mono whitespace-pre-wrap">curl -X POST <span x-text="apiBaseUrl"></span>/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"testuser@apilab.dev","password":"test123"}'
+  -d '{"email":"testuser@apilab.dev","password":"test123"}'</pre>
                             </div>
                             <div class="text-xs text-gray-600">
                                 <strong>Expected Response:</strong>
@@ -499,8 +1204,8 @@ curl -X POST http://localhost:5001/api/auth/login \
                         <div class="mb-4 bg-gray-50 p-3 rounded">
                             <div class="font-bold text-sm mb-2">2️⃣ Get All Todos</div>
                             <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
-curl -X GET http://localhost:5001/api/todos \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+                                <pre class="font-mono whitespace-pre-wrap">curl -X GET <span x-text="apiBaseUrl"></span>/api/todos \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"</pre>
                             </div>
                             <div class="text-xs text-gray-600">
                                 <strong>Expected Response:</strong> Array of todo items
@@ -511,8 +1216,8 @@ curl -X GET http://localhost:5001/api/todos \
                         <div class="mb-4 bg-gray-50 p-3 rounded">
                             <div class="font-bold text-sm mb-2">3️⃣ Get Single Todo by ID</div>
                             <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
-curl -X GET http://localhost:5001/api/todos/1 \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+                                <pre class="font-mono whitespace-pre-wrap">curl -X GET <span x-text="apiBaseUrl"></span>/api/todos/1 \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"</pre>
                             </div>
                             <div class="text-xs text-gray-600">
                                 <strong>Expected Response:</strong> One specific todo item
@@ -523,10 +1228,10 @@ curl -X GET http://localhost:5001/api/todos/1 \
                         <div class="mb-4 bg-gray-50 p-3 rounded">
                             <div class="font-bold text-sm mb-2">4️⃣ Create New Todo</div>
                             <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
-curl -X POST http://localhost:5001/api/todos \
+                                <pre class="font-mono whitespace-pre-wrap">curl -X POST <span x-text="apiBaseUrl"></span>/api/todos \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
-  -d '{"title":"Buy milk","description":"2% milk","completed":false}'
+  -d '{"title":"Buy milk","description":"2% milk","completed":false}'</pre>
                             </div>
                             <div class="text-xs text-gray-600">
                                 <strong>Expected Response:</strong> Newly created todo with ID
@@ -537,10 +1242,10 @@ curl -X POST http://localhost:5001/api/todos \
                         <div class="mb-4 bg-gray-50 p-3 rounded">
                             <div class="font-bold text-sm mb-2">5️⃣ Update Todo (Mark as Complete)</div>
                             <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
-curl -X PUT http://localhost:5001/api/todos/1 \
+                                <pre class="font-mono whitespace-pre-wrap">curl -X PUT <span x-text="apiBaseUrl"></span>/api/todos/1 \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
-  -d '{"completed":true}'
+  -d '{"completed":true}'</pre>
                             </div>
                             <div class="text-xs text-gray-600">
                                 <strong>Note:</strong> ID in URL is required!
@@ -551,8 +1256,8 @@ curl -X PUT http://localhost:5001/api/todos/1 \
                         <div class="mb-4 bg-gray-50 p-3 rounded">
                             <div class="font-bold text-sm mb-2">6️⃣ Delete Todo</div>
                             <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
-curl -X DELETE http://localhost:5001/api/todos/1 \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+                                <pre class="font-mono whitespace-pre-wrap">curl -X DELETE <span x-text="apiBaseUrl"></span>/api/todos/1 \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"</pre>
                             </div>
                             <div class="text-xs text-gray-600">
                                 <strong>Expected Response:</strong> 204 No Content (empty response)
@@ -565,6 +1270,512 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
                                 Replace <code class="bg-purple-200 px-1 rounded">YOUR_TOKEN_HERE</code> with 
                                 the actual token you got from step 1!
                             </p>
+                        </div>
+                    </div>
+
+                    <!-- API Documentation Tutorial -->
+                    <div x-show="activeLesson === 'apidocs'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">📄 What is API Documentation?</h3>
+                        
+                        <p class="text-gray-700 mb-3 text-base leading-relaxed">
+                            <strong>API Documentation</strong> is like an <strong>instruction manual</strong> for using an API. 
+                            It tells you what you can ask for and how to ask for it!
+                        </p>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2">📚 Definition</p>
+                            <p class="text-indigo-900 text-sm">
+                                <strong>API Documentation:</strong> A guide that explains all the commands (endpoints) an API 
+                                understands, what information you need to send, and what you'll get back. Like a recipe book for APIs!
+                            </p>
+                        </div>
+
+                        <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400 mb-4">
+                            <p class="font-bold text-yellow-800 mb-2">🍕 Real-World Example</p>
+                            <p class="text-yellow-900 text-sm">
+                                Imagine a pizza menu at a restaurant:<br><br>
+                                🍕 <strong>"Margherita Pizza"</strong> - $12<br>
+                                📝 Ingredients: Tomato sauce, mozzarella, basil<br>
+                                ⏰ Ready in: 15 minutes<br><br>
+                                That's documentation! It tells you what you can order, what's in it, and what to expect.
+                                <strong>API documentation does the same thing for API requests!</strong>
+                            </p>
+                        </div>
+
+                        <h4 class="font-bold text-base mb-3 text-gray-800">📋 Components of Good API Documentation</h4>
+
+                        <!-- Component 1: Endpoint Name & Description -->
+                        <div class="mb-4 bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border-2 border-blue-300">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl mr-2">1️⃣</span>
+                                <p class="font-bold text-blue-800 text-base">Endpoint Name & Description</p>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                Tells you <strong>WHAT</strong> the endpoint does in simple words
+                            </p>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-blue-200 mb-2">
+                                <div class="font-mono text-sm text-blue-700 mb-1">GET /api/todos</div>
+                                <p class="text-xs text-gray-700">
+                                    <strong>Description:</strong> Gets a list of all your to-do items
+                                </p>
+                            </div>
+
+                            <div class="bg-green-50 p-2 rounded text-xs">
+                                <p class="font-bold text-green-800 mb-1">🌍 Real Example - Spotify API:</p>
+                                <div class="font-mono text-xs bg-white p-2 rounded mb-1">GET /v1/me/playlists</div>
+                                <p class="text-green-700">Gets a list of all your playlists</p>
+                            </div>
+                        </div>
+
+                        <!-- Component 2: HTTP Method -->
+                        <div class="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-300">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl mr-2">2️⃣</span>
+                                <p class="font-bold text-green-800 text-base">HTTP Method</p>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                Shows which <strong>command type</strong> to use (GET, POST, PUT, PATCH, DELETE)
+                            </p>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-green-200 space-y-2 text-xs">
+                                <div class="flex items-center">
+                                    <span class="px-2 py-1 bg-blue-500 text-white rounded mr-2 font-mono">GET</span>
+                                    <span>View/read data</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="px-2 py-1 bg-green-500 text-white rounded mr-2 font-mono">POST</span>
+                                    <span>Create new data</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="px-2 py-1 bg-yellow-600 text-white rounded mr-2 font-mono">PUT</span>
+                                    <span>Replace entire item</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="px-2 py-1 bg-orange-500 text-white rounded mr-2 font-mono">PATCH</span>
+                                    <span>Update specific fields</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="px-2 py-1 bg-red-500 text-white rounded mr-2 font-mono">DELETE</span>
+                                    <span>Remove data</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Component 3: Parameters -->
+                        <div class="mb-4 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl mr-2">3️⃣</span>
+                                <p class="font-bold text-purple-800 text-base">Parameters (Inputs)</p>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                Lists what <strong>information you need to send</strong> with your request
+                            </p>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-purple-200 mb-2">
+                                <p class="font-bold text-sm text-purple-700 mb-2">Example: Create a Todo</p>
+                                <table class="w-full text-xs">
+                                    <thead class="bg-purple-100">
+                                        <tr>
+                                            <th class="p-2 text-left">Field</th>
+                                            <th class="p-2 text-left">Type</th>
+                                            <th class="p-2 text-left">Required?</th>
+                                            <th class="p-2 text-left">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-t">
+                                            <td class="p-2 font-mono">title</td>
+                                            <td class="p-2">string</td>
+                                            <td class="p-2 text-red-600">✓ Yes</td>
+                                            <td class="p-2">Task name</td>
+                                        </tr>
+                                        <tr class="border-t">
+                                            <td class="p-2 font-mono">description</td>
+                                            <td class="p-2">string</td>
+                                            <td class="p-2 text-green-600">Optional</td>
+                                            <td class="p-2">Extra details</td>
+                                        </tr>
+                                        <tr class="border-t">
+                                            <td class="p-2 font-mono">completed</td>
+                                            <td class="p-2">boolean</td>
+                                            <td class="p-2 text-green-600">Optional</td>
+                                            <td class="p-2">Is it done?</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="bg-pink-50 p-2 rounded text-xs">
+                                <p class="font-bold text-pink-800 mb-1">🎮 Like a Video Game Form:</p>
+                                <p class="text-pink-700">
+                                    When you create a character in a game, some fields are required (name) and some are optional (nickname). 
+                                    API parameters work the same way!
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Component 4: Request Example -->
+                        <div class="mb-4 bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border-2 border-orange-300">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl mr-2">4️⃣</span>
+                                <p class="font-bold text-orange-800 text-base">Request Example</p>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                Shows you <strong>exactly how to make the request</strong> (copy-paste ready!)
+                            </p>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-orange-200">
+                                <p class="font-bold text-xs text-orange-700 mb-2">📤 Sample Request:</p>
+                                <pre class="bg-gray-50 p-2 rounded text-xs overflow-x-auto font-mono">POST /api/todos
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN
+
+{
+  "title": "Buy groceries",
+  "description": "Milk, eggs, bread",
+  "completed": false
+}</pre>
+                            </div>
+                        </div>
+
+                        <!-- Component 5: Response Example -->
+                        <div class="mb-4 bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-lg border-2 border-teal-300">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl mr-2">5️⃣</span>
+                                <p class="font-bold text-teal-800 text-base">Response Example</p>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                Shows what the API will <strong>send back to you</strong>
+                            </p>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-teal-200">
+                                <p class="font-bold text-xs text-teal-700 mb-2">📥 Sample Response (Success):</p>
+                                <pre class="bg-green-50 p-2 rounded text-xs overflow-x-auto font-mono">{
+  "id": 42,
+  "title": "Buy groceries",
+  "description": "Milk, eggs, bread",
+  "completed": false,
+  "created_at": "2024-02-13T10:30:00Z",
+  "owner_id": 1
+}</pre>
+                                <p class="text-xs text-gray-600 mt-2">
+                                    ✅ Status: <span class="font-mono bg-green-100 px-1 rounded">201 Created</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Component 6: Error Responses -->
+                        <div class="mb-4 bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-lg border-2 border-red-300">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl mr-2">6️⃣</span>
+                                <p class="font-bold text-red-800 text-base">Error Responses</p>
+                            </div>
+                            <p class="text-sm text-gray-800 mb-3">
+                                Explains what happens when <strong>something goes wrong</strong>
+                            </p>
+                            
+                            <div class="space-y-2">
+                                <div class="bg-white p-3 rounded-lg border border-red-200">
+                                    <p class="font-bold text-xs text-red-700 mb-1">❌ Error: Missing Required Field</p>
+                                    <pre class="bg-red-50 p-2 rounded text-xs font-mono">{
+  "error": "Title is required",
+  "code": "MISSING_FIELD",
+  "status": 400
+}</pre>
+                                </div>
+
+                                <div class="bg-white p-3 rounded-lg border border-orange-200">
+                                    <p class="font-bold text-xs text-orange-700 mb-1">⚠️ Error: Not Logged In</p>
+                                    <pre class="bg-orange-50 p-2 rounded text-xs font-mono">{
+  "error": "Authentication required",
+  "code": "UNAUTHORIZED",
+  "status": 401
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real API Documentation Examples -->
+                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border-2 border-indigo-400 mb-4">
+                            <p class="font-bold text-indigo-800 mb-3 text-base">🌍 Famous API Documentation Examples</p>
+                            <div class="space-y-3 text-sm">
+                                <div class="bg-white p-3 rounded-lg border border-indigo-200 hover:border-blue-400 transition">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-bold text-blue-700 mb-1">📘 Stripe (Payments)</p>
+                                            <p class="text-gray-700 text-xs mb-2">
+                                                Beautiful docs with code examples in multiple languages (Python, JavaScript, Ruby). 
+                                                Every endpoint has a "Try it now" button - industry gold standard!
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="https://stripe.com/docs/api" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                        Visit Stripe Docs
+                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-indigo-200 hover:border-green-400 transition">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-bold text-green-700 mb-1">📗 OpenWeather (Weather Data)</p>
+                                            <p class="text-gray-700 text-xs mb-2">
+                                                Super simple API docs with clear examples. Perfect for beginners! 
+                                                Shows exactly what each parameter does with real-world use cases.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="https://openweathermap.org/api" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center text-xs text-green-600 hover:text-green-800 font-medium">
+                                        Visit OpenWeather Docs
+                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-indigo-200 hover:border-purple-400 transition">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-bold text-purple-700 mb-1">📕 JSONPlaceholder (Fake Data)</p>
+                                            <p class="text-gray-700 text-xs mb-2">
+                                                Free fake REST API for testing and learning. Clean, simple docs with 
+                                                ready-to-use endpoints - no authentication needed!
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="https://jsonplaceholder.typicode.com/" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 font-medium">
+                                        Visit JSONPlaceholder Docs
+                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Why Good Documentation Matters -->
+                        <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                            <p class="font-bold text-yellow-800 mb-2 text-base">💡 Why Good Documentation Matters</p>
+                            <div class="space-y-2 text-sm text-yellow-900">
+                                <div class="flex items-start">
+                                    <span class="mr-2">⚡</span>
+                                    <span><strong>Faster Development:</strong> Developers don't waste time guessing how to use the API</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">🐛</span>
+                                    <span><strong>Fewer Errors:</strong> Clear examples prevent common mistakes</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">😊</span>
+                                    <span><strong>Happy Users:</strong> Easy-to-understand docs make people want to use your API</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="mr-2">💰</span>
+                                    <span><strong>More Adoption:</strong> Companies with great docs get more customers!</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What is Swagger? Lesson -->
+                    <div x-show="activeLesson === 'swagger'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔄 What is Swagger?</h3>
+                        
+                        <p class="text-gray-700 mb-3 text-base leading-relaxed">
+                            <strong>Swagger</strong> is like a <strong>magical interactive instruction manual</strong> for APIs! 
+                            Instead of just reading about an API, you can actually TRY IT OUT right in your web browser!
+                        </p>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-300 mb-4">
+                            <p class="font-bold text-indigo-800 mb-2">📚 Definition</p>
+                            <p class="text-indigo-900 text-sm">
+                                <strong>Swagger:</strong> A tool that creates an interactive website showing all your API endpoints 
+                                with "Try it out" buttons. You can test APIs without writing any code!
+                            </p>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border-l-4 border-yellow-400 mb-4">
+                            <p class="font-bold text-yellow-800 mb-2">🎮 Real-World Example</p>
+                            <p class="text-yellow-900 text-sm">
+                                Imagine you have a new video game but NO instruction manual. Instead, the game has a 
+                                <strong>"Practice Mode"</strong> where you can:<br><br>
+                                🎯 See ALL the moves you can do<br>
+                                🎮 Try each move by clicking a button<br>
+                                👀 See what happens immediately<br>
+                                📖 Read how each move works<br><br>
+                                <strong>That's exactly what Swagger does for APIs!</strong>
+                            </p>
+                        </div>
+
+                        <h4 class="font-bold text-base mb-3 text-gray-800">🎯 Why is Swagger Amazing?</h4>
+
+                        <div class="space-y-3 mb-4">
+                            <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                                <div class="flex items-center mb-2">
+                                    <span class="text-2xl mr-2">1️⃣</span>
+                                    <p class="font-bold text-green-800">No Coding Required!</p>
+                                </div>
+                                <p class="text-sm text-green-900">
+                                    You don't need to know how to code to test APIs. Just click buttons and fill in forms!
+                                    It's like using a website instead of writing command-line code.
+                                </p>
+                            </div>
+
+                            <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                                <div class="flex items-center mb-2">
+                                    <span class="text-2xl mr-2">2️⃣</span>
+                                    <p class="font-bold text-blue-800">See Instant Results</p>
+                                </div>
+                                <p class="text-sm text-blue-900">
+                                    Click "Try it out" → Click "Execute" → See the response immediately!
+                                    It's like a playground where you can experiment safely.
+                                </p>
+                            </div>
+
+                            <div class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-400">
+                                <div class="flex items-center mb-2">
+                                    <span class="text-2xl mr-2">3️⃣</span>
+                                    <p class="font-bold text-purple-800">Everything in One Place</p>
+                                </div>
+                                <p class="text-sm text-purple-900">
+                                    See ALL endpoints, read documentation, test requests, and view responses - 
+                                    all on one beautiful webpage!
+                                </p>
+                            </div>
+
+                            <div class="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-400">
+                                <div class="flex items-center mb-2">
+                                    <span class="text-2xl mr-2">4️⃣</span>
+                                    <p class="font-bold text-orange-800">Auto-Generated</p>
+                                </div>
+                                <p class="text-sm text-orange-900">
+                                    Developers don't have to create Swagger docs by hand. The computer reads the code 
+                                    and automatically creates the interactive documentation!
+                                </p>
+                            </div>
+                        </div>
+
+                        <h4 class="font-bold text-base mb-3 text-gray-800">🔍 How to Use Swagger (Step-by-Step)</h4>
+
+                        <div class="bg-white border-2 border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold mr-3">1</div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 mb-1">Open Swagger UI</p>
+                                        <p class="text-sm text-gray-600">Click the orange "Swagger" button in the top navbar</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold mr-3">2</div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 mb-1">Browse Endpoints</p>
+                                        <p class="text-sm text-gray-600">You'll see all API endpoints grouped by category (Todos, Auth, Admin)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold mr-3">3</div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 mb-1">Click an Endpoint</p>
+                                        <p class="text-sm text-gray-600">Click on any endpoint (like "GET /api/todos") to expand it</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold mr-3">4</div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 mb-1">Click "Try it out"</p>
+                                        <p class="text-sm text-gray-600">This unlocks the form so you can enter data</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold mr-3">5</div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 mb-1">Fill in Parameters (if needed)</p>
+                                        <p class="text-sm text-gray-600">Enter authentication token, request body, or URL parameters</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold mr-3">6</div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 mb-1">Click "Execute"</p>
+                                        <p class="text-sm text-gray-600">Sends the real API request!</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center font-bold mr-3">7</div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 mb-1">See Results!</p>
+                                        <p class="text-sm text-gray-600">View the response with status code, headers, and data</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-lg border-2 border-teal-300 mb-4">
+                            <p class="font-bold text-teal-800 mb-3 text-base">🌍 Who Uses Swagger?</p>
+                            <div class="space-y-2 text-sm text-teal-900">
+                                <div>✅ <strong>Stripe</strong> - Payment API (industry standard for beautiful docs)</div>
+                                <div>✅ <strong>OpenWeather</strong> - Weather data API with clean Swagger UI</div>
+                                <div>✅ <strong>Amazon AWS</strong> - Cloud services with Swagger documentation</div>
+                                <div>✅ <strong>Microsoft Azure</strong> - Enterprise APIs with Swagger specs</div>
+                                <div>✅ <strong>Thousands of companies worldwide!</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-pink-50 p-4 rounded-lg border-l-4 border-pink-400">
+                            <p class="font-bold text-pink-800 mb-2 text-base">🎓 Try It Yourself!</p>
+                            <p class="text-pink-900 text-sm mb-3">
+                                API Zero to Hero has Swagger built-in! Click the <strong class="text-orange-600">orange "Swagger" button</strong> 
+                                in the top navbar to open the interactive documentation.
+                            </p>
+                            <div class="bg-white p-3 rounded-lg border border-pink-200">
+                                <p class="text-sm font-bold text-pink-700 mb-2">🧪 Experiment Ideas:</p>
+                                <ul class="text-xs text-pink-800 space-y-1 ml-4 list-disc">
+                                    <li>Try GET /api/todos to see all todos</li>
+                                    <li>Use POST /api/todos to create a new task</li>
+                                    <li>Test authentication with your login token</li>
+                                    <li>See what error messages look like</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-400 mt-4">
+                            <p class="font-bold text-blue-800 mb-2 text-base">📝 Swagger vs Regular Docs</p>
+                            <table class="w-full text-sm">
+                                <thead class="bg-blue-100">
+                                    <tr>
+                                        <th class="p-2 text-left border border-blue-200">Feature</th>
+                                        <th class="p-2 text-left border border-blue-200">Regular Docs</th>
+                                        <th class="p-2 text-left border border-blue-200">Swagger</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">Test APIs</td>
+                                        <td class="p-2 border border-blue-200">❌ Must use Postman/curl</td>
+                                        <td class="p-2 border border-blue-200">✅ Click "Try it out"</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">See All Endpoints</td>
+                                        <td class="p-2 border border-blue-200">✅ Listed in text</td>
+                                        <td class="p-2 border border-blue-200">✅ Visual + expandable</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">View Examples</td>
+                                        <td class="p-2 border border-blue-200">✅ Static code blocks</td>
+                                        <td class="p-2 border border-blue-200">✅ Live + editable</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border border-blue-200 font-bold">See Real Responses</td>
+                                        <td class="p-2 border border-blue-200">❌ Just examples</td>
+                                        <td class="p-2 border border-blue-200">✅ Actual API responses</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -828,7 +2039,7 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
                     
                     <div class="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
                         <p class="text-sm text-blue-800 mb-2">
-                            <strong>Base URL:</strong> <code class="bg-blue-100 px-2 py-1 rounded">http://localhost:5001/api</code>
+                            <strong>Base URL:</strong> <code class="bg-blue-100 px-2 py-1 rounded" x-text="apiBaseUrl + '/api'"></code>
                         </p>
                         <p class="text-xs text-blue-700">
                             This tutorial will teach you how to read and understand API documentation like a Business Analyst.
@@ -1484,47 +2695,14 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
                         </button>
                     </div>
 
-                    <!-- Inline Login Form -->
-                    <div x-show="!token" class="mb-6">
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
-                            <div class="flex items-start mb-4">
-                                <div class="flex-shrink-0">
-                                    <div class="flex items-center justify-center w-12 h-12 bg-blue-500 rounded-full">
-                                        <span class="text-2xl">🔐</span>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Login to View Database</h3>
-                                    <p class="text-sm text-gray-600">Quick login to access live database tables</p>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input type="email" x-model="loginEmail" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="testuser@apilab.dev">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                    <input type="password" x-model="loginPassword" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="test123"
-                                           @keyup.enter="login()">
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <button @click="login()" 
-                                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">
-                                    🔑 Login & View Database
-                                </button>
-                                <div class="text-xs text-gray-500">
-                                    Default: testuser@apilab.dev / test123
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Login Required Message -->
+                    <div x-show="!token" class="text-center py-12">
+                        <div class="text-blue-400 text-6xl mb-4">🔐</div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Login Required</h3>
+                        <p class="text-gray-600 mb-4">Please log in to view database tables</p>
+                        <button @click="showLoginModal = true" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">
+                            🔑 Login Now
+                        </button>
                     </div>
 
                     <!-- Table Selector -->
@@ -1650,62 +2828,75 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h2 class="text-2xl font-bold mb-6">⚙️ Settings</h2>
                     
-                    <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400">
-                        <p class="text-sm text-blue-700">
-                            <strong>💡 Platform Info:</strong> This app runs on a free-tier server. 
-                            The server sleeps after 15 minutes of inactivity. Your first request after sleep 
-                            will take ~30 seconds while the server wakes up. This is normal!
-                        </p>
+                    <!-- Login Required Message -->
+                    <div x-show="!token" class="text-center py-12">
+                        <div class="text-blue-400 text-6xl mb-4">🔐</div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Login Required</h3>
+                        <p class="text-gray-600 mb-4">Please log in to access settings and reset database</p>
+                        <button @click="showLoginModal = true" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">
+                            🔑 Login Now
+                        </button>
                     </div>
 
-                    <!-- Error Playground Section -->
-                    <div class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-400">
-                        <h3 class="text-lg font-bold mb-3">🔥 Error Playground</h3>
-                        <p class="text-sm text-gray-700 mb-3">
-                            Simulate API failures to learn error handling. When enabled, 
-                            some requests will randomly fail with realistic errors.
-                        </p>
-                        
-                        <div class="flex items-center mb-3">
-                            <input type="checkbox" x-model="errorPlaygroundEnabled" id="errorPlayground" class="mr-2">
-                            <label for="errorPlayground" class="text-sm font-medium">Enable Error Playground</label>
+                    <!-- Settings Content (only show when logged in) -->
+                    <div x-show="token">
+                        <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400">
+                            <p class="text-sm text-blue-700">
+                                <strong>💡 Platform Info:</strong> This app runs on a free-tier server. 
+                                The server sleeps after 15 minutes of inactivity. Your first request after sleep 
+                                will take ~30 seconds while the server wakes up. This is normal!
+                            </p>
                         </div>
-                        
-                        <div x-show="errorPlaygroundEnabled" class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-medium mb-1">
-                                    Chaos Level: <span x-text="Math.round(chaosLevel * 100) + '%'"></span>
-                                </label>
-                                <input type="range" x-model.number="chaosLevel" min="0.05" max="0.5" step="0.05" class="w-full">
-                                <p class="text-xs text-gray-600 mt-1">Higher = more frequent errors (good for learning!)</p>
+
+                        <!-- Error Playground Section -->
+                        <div class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-400">
+                            <h3 class="text-lg font-bold mb-3">🔥 Error Playground</h3>
+                            <p class="text-sm text-gray-700 mb-3">
+                                Simulate API failures to learn error handling. When enabled, 
+                                some requests will randomly fail with realistic errors.
+                            </p>
+                            
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" x-model="errorPlaygroundEnabled" id="errorPlayground" class="mr-2">
+                                <label for="errorPlayground" class="text-sm font-medium">Enable Error Playground</label>
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Simulate Latency (ms):</label>
-                                <input type="number" x-model.number="simulateLatency" min="0" max="3000" step="100" 
-                                       class="px-3 py-1 border rounded">
-                                <p class="text-xs text-gray-600 mt-1">Add artificial delay to test timeout handling</p>
+                            <div x-show="errorPlaygroundEnabled" class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">
+                                        Chaos Level: <span x-text="Math.round(chaosLevel * 100) + '%'"></span>
+                                    </label>
+                                    <input type="range" x-model.number="chaosLevel" min="0.05" max="0.5" step="0.05" class="w-full">
+                                    <p class="text-xs text-gray-600 mt-1">Higher = more frequent errors (good for learning!)</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Simulate Latency (ms):</label>
+                                    <input type="number" x-model.number="simulateLatency" min="0" max="3000" step="100" 
+                                           class="px-3 py-1 border rounded">
+                                    <p class="text-xs text-gray-600 mt-1">Add artificial delay to test timeout handling</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="border-t pt-6">
-                        <h3 class="text-lg font-bold mb-4">🔄 Reset to Default</h3>
-                        <p class="text-gray-600 mb-4">
-                            Start fresh! This will restore the database to its original state with:
-                        </p>
-                        <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
-                            <li>2 default users (admin, testuser)</li>
-                            <li>7 sample todos (including PATCH example)</li>
-                            <li>Clear all request logs</li>
-                        </ul>
-                        <p class="text-blue-600 font-medium mb-2">💡 Any changes you made will be reset to defaults</p>
-                        <p class="text-sm text-gray-500 mb-4">Available to all users in learning mode</p>
-                        
-                        <button @click="showResetConfirm = true" 
-                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                            Reset to Default ↺
-                        </button>
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-bold mb-4">🔄 Reset to Default</h3>
+                            <p class="text-gray-600 mb-4">
+                                Start fresh! This will restore the database to its original state with:
+                            </p>
+                            <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
+                                <li>2 default users (admin, testuser)</li>
+                                <li>7 sample todos (including PATCH example)</li>
+                                <li>Clear all request logs</li>
+                            </ul>
+                            <p class="text-blue-600 font-medium mb-2">💡 Any changes you made will be reset to defaults</p>
+                            <p class="text-sm text-gray-500 mb-4">Requires authentication for security</p>
+                            
+                            <button @click="showResetConfirm = true" 
+                                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                                Reset to Default ↺
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1744,12 +2935,65 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div x-show="showLoginModal" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+         x-cloak
+         @click.self="showLoginModal = false">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0">
+                    <div class="flex items-center justify-center w-12 h-12 bg-blue-500 rounded-full">
+                        <span class="text-2xl">🔐</span>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-xl font-bold text-gray-800">Login to API Zero to Hero</h3>
+                    <p class="text-sm text-gray-600">Access Database and Settings</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" x-model="loginEmail" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="testuser@apilab.dev">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" x-model="loginPassword" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="test123"
+                           @keyup.enter="login(); showLoginModal = false">
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 p-3 rounded-lg mb-4">
+                <p class="text-xs text-gray-600 mb-2"><strong>Default Credentials:</strong></p>
+                <p class="text-xs text-gray-600">Regular: <code class="bg-gray-200 px-1 rounded">testuser@apilab.dev</code> / <code class="bg-gray-200 px-1 rounded">test123</code></p>
+                <p class="text-xs text-gray-600">Admin: <code class="bg-gray-200 px-1 rounded">admin@apilab.dev</code> / <code class="bg-gray-200 px-1 rounded">admin123</code></p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button @click="showLoginModal = false" 
+                        class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                    Cancel
+                </button>
+                <button @click="login(); showLoginModal = false; if (activeTab === 'database') loadDatabaseTables()" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    🔑 Login
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Alpine.js App Data -->
     <script>
         function appData() {
             return {
                 // Tab & Lesson state
-                activeTab: 'playground',
+                activeTab: 'learn',
                 activeLesson: 'intro',
                 
                 // Request state
@@ -1764,7 +3008,7 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
                 loginEmail: 'testuser@apilab.dev',
                 loginPassword: 'test123',
                 currentUser: null,
-                requestBody: '{\n  "title": "My new todo",\n  "description": "Created from API Lab",\n  "completed": false\n}',
+                requestBody: '{\n  "title": "My new todo",\n  "description": "Created from API Zero to Hero",\n  "completed": false\n}',
                 loading: false,
                 response: null,
                 lastRequest: null,
@@ -1784,13 +3028,27 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
                 
                 // UI state
                 showResetConfirm: false,
+                showLoginModal: false,
+                
+                // Computed properties
+                get apiBaseUrl() {
+                    return window.location.origin;
+                },
                 
                 init() {
-                    console.log('API Lab initialized');
-                    // Load token from localStorage if exists
+                    console.log('API Zero to Hero initialized');
+                    // Load token and user from localStorage if exists
                     const savedToken = localStorage.getItem('apilab_token');
+                    const savedUser = localStorage.getItem('apilab_user');
                     if (savedToken) {
                         this.token = savedToken;
+                    }
+                    if (savedUser) {
+                        try {
+                            this.currentUser = JSON.parse(savedUser);
+                        } catch (e) {
+                            console.error('Failed to parse saved user', e);
+                        }
                     }
                 },
                 

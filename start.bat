@@ -1,5 +1,5 @@
 @echo off
-echo 🧪 API Lab - Starting Local Setup
+echo 🧪 API Zero to Hero - Starting Local Setup
 echo.
 
 REM Check Python version
@@ -60,7 +60,7 @@ echo.
 
 REM Start the server
 echo ======================================
-echo 🚀 Starting API Lab...
+echo 🚀 Starting API Zero to Hero...
 echo ======================================
 echo.
 echo 📍 Local URL:  http://localhost:5000

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_httpauth import HTTPBasicAuth
+from flasgger import Swagger
 from app.config import config
 
 # Initialize extensions
@@ -23,6 +24,82 @@ def create_app(config_name='default'):
     db.init_app(app)
     jwt.init_app(app)
     CORS(app)
+    
+    # Initialize Swagger
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec',
+                "route": '/apispec.json',
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/api/docs/swagger"
+    }
+    
+    swagger_template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "API Zero to Hero - Interactive Learning API",
+            "description": """
+# Welcome to API Zero to Hero! 🎓
+
+Learn REST APIs through hands-on experimentation in your browser!
+
+## 🔐 How to Authenticate
+
+Click the **"Authorize"** button (top right) and choose one method:
+
+### Option 1: Basic Auth (Username/Password)
+- **Username:** `testuser@apilab.dev`  
+- **Password:** `test123`
+
+**Admin credentials:**  
+- **Username:** `admin@apilab.dev`  
+- **Password:** `admin123`
+
+### Option 2: Bearer Token (JWT)
+1. Call **POST /api/auth/login** with credentials
+2. Copy the `token` from response
+3. Click "Authorize" → Enter: `Bearer YOUR_TOKEN`
+
+---
+
+**💡 Tip:** Click any endpoint below → "Try it out" → "Execute" to see it in action!
+            """,
+            "version": "1.0.0",
+            "contact": {
+                "name": "API Zero to Hero",
+                "url": "https://github.com/yourusername/apilab"
+            }
+        },
+        "host": "",  # Will be auto-detected
+        "basePath": "/api",
+        "schemes": ["http", "https"],
+        "securityDefinitions": {
+            "Bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "JWT token from /api/auth/login. Format: 'Bearer YOUR_TOKEN_HERE'"
+            },
+            "BasicAuth": {
+                "type": "basic",
+                "description": "Use email as username. Default: testuser@apilab.dev / test123"
+            }
+        },
+        "tags": [
+            {"name": "Authentication", "description": "Login and get JWT tokens"},
+            {"name": "Todos", "description": "Create, read, update, and delete todo items"},
+            {"name": "Admin", "description": "Admin-only endpoints (user management, database)"}
+        ]
+    }
+    
+    Swagger(app, config=swagger_config, template=swagger_template)
     
     # Register blueprints
     from app.routes import auth, todos, admin, postman, main, scenarios

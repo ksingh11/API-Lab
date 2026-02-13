@@ -1,6 +1,6 @@
 # 🚀 Deployment Guide for Beginners
 
-This guide will help you deploy API Lab to Render (free hosting) with zero DevOps experience needed.
+This guide will help you deploy API Zero to Hero to Render (free hosting) with zero DevOps experience needed.
 
 ---
 
@@ -86,7 +86,7 @@ This ensures your database isn't deleted when the server restarts.
 ### Step 7: Test Your Deployment
 
 1. Click the URL at the top (e.g., `https://apilab-xyz.onrender.com`)
-2. You should see the API Lab dashboard
+2. You should see the API Zero to Hero dashboard
 3. Try logging in:
    - Email: `testuser@apilab.dev`
    - Password: `test123`

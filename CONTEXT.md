@@ -1,4 +1,4 @@
-# API Lab - AI Context Document
+# API Zero to Hero - AI Context Document
 
 > This file helps AI coding assistants quickly understand the project structure, architecture, and recent changes.
 
@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-**API Lab** is an interactive learning platform that teaches APIs to non-technical users (BAs, PMs, QA testers) through hands-on experimentation in a browser-based sandbox.
+**API Zero to Hero** is an interactive learning platform that teaches APIs to non-technical users (BAs, PMs, QA testers) through hands-on experimentation in a browser-based sandbox.
 
 **Key Philosophy:** Learning by doing, not reading. No terminal, no coding—just clicking and experimenting.
 

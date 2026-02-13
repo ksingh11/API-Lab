@@ -138,21 +138,36 @@ def get_table_data(table_name):
 @jwt_required()
 def reset_db():
     """
-    Reset database to default seed data.
-    
-    For learning purposes, any authenticated user can reset the database.
-    In production, this would be admin-only.
-    
-    WARNING: This will delete ALL data and restore defaults.
-    
-    Response:
-        {
-            "message": "Database reset successfully",
-            "seed_data": {
-                "users": 2,
-                "todos": 6
-            }
-        }
+    Reset database to defaults
+    ---
+    tags:
+      - Admin
+    summary: Reset database to seed data
+    description: Deletes all data and restores default users and todos. Available to all authenticated users (learning sandbox).
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Database reset successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Database reset successfully
+            seed_data:
+              type: object
+              properties:
+                users:
+                  type: integer
+                  example: 2
+                todos:
+                  type: integer
+                  example: 7
+      401:
+        description: Authentication required
+      500:
+        description: Reset failed
     """
     # Allow any authenticated user to reset (this is a learning sandbox)
     # In production, you would use: require_admin()
