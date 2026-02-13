@@ -138,7 +138,10 @@ def get_table_data(table_name):
 @jwt_required()
 def reset_db():
     """
-    Reset database to default seed data (admin only).
+    Reset database to default seed data.
+    
+    For learning purposes, any authenticated user can reset the database.
+    In production, this would be admin-only.
     
     WARNING: This will delete ALL data and restore defaults.
     
@@ -147,13 +150,20 @@ def reset_db():
             "message": "Database reset successfully",
             "seed_data": {
                 "users": 2,
-                "todos": 5
+                "todos": 6
             }
         }
     """
-    user, error, status = require_admin()
-    if error:
-        return error, status
+    # Allow any authenticated user to reset (this is a learning sandbox)
+    # In production, you would use: require_admin()
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({
+            'error': 'User not found',
+            'code': 'USER_NOT_FOUND'
+        }), 404
     
     try:
         result = reset_database()

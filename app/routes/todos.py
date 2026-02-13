@@ -6,6 +6,36 @@ import base64
 
 bp = Blueprint('todos', __name__, url_prefix='/api/todos')
 
+@bp.errorhandler(405)
+def method_not_allowed(e):
+    """
+    Handle Method Not Allowed errors with helpful guidance.
+    """
+    method = request.method
+    path = request.path
+    
+    # Common mistakes and helpful hints
+    hints = []
+    
+    if method in ['PUT', 'PATCH', 'DELETE']:
+        if not any(char.isdigit() for char in path):
+            hints.append(f"{method} requires a todo ID in the URL. Example: /api/todos/5")
+    
+    if method == 'POST' and '/' in path.replace('/api/todos', '').replace('/api/todos/', ''):
+        hints.append("POST creates new todos and doesn't need an ID. Use /api/todos (without ID)")
+    
+    return jsonify({
+        'error': 'Method Not Allowed',
+        'code': 'METHOD_NOT_ALLOWED',
+        'method': method,
+        'path': path,
+        'hint': hints[0] if hints else f'{method} is not supported for this endpoint',
+        'allowed_methods': {
+            '/api/todos': ['GET', 'POST'],
+            '/api/todos/:id': ['GET', 'PUT', 'PATCH', 'DELETE']
+        }
+    }), 405
+
 def get_authenticated_user():
     """
     Get authenticated user from either JWT token or Basic Auth.
@@ -177,15 +207,23 @@ def create_todo():
         'data': todo.to_dict()
     }), 201
 
-@bp.route('/<int:todo_id>', methods=['PUT'])
+@bp.route('/<int:todo_id>', methods=['PUT', 'PATCH'])
 def update_todo(todo_id):
     """
     Update an existing todo.
     
-    Request Body:
+    PUT: Full update (send all fields)
+    PATCH: Partial update (send only fields to change)
+    
+    Request Body (PUT - all fields):
         {
             "title": "Updated title",
             "description": "Updated description",
+            "completed": true
+        }
+    
+    Request Body (PATCH - partial):
+        {
             "completed": true
         }
     """
