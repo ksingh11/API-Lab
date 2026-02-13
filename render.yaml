@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: apilab
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///instance/apilab.db
+      - key: FLASK_ENV
+        value: production
+    disk:
+      name: apilab-data
+      mountPath: /opt/render/project/instance
+      sizeGB: 1

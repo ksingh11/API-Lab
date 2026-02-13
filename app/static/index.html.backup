@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Lab - Interactive API Learning Sandbox</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        [x-cloak] { display: none !important; }
+        .code-block {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+        .status-2xx { color: #10b981; }
+        .status-3xx { color: #f59e0b; }
+        .status-4xx { color: #ef4444; }
+        .status-5xx { color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="appData()" x-init="init()">
+    
+    <!-- Production Warning Banner -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Learning Sandbox:</strong> This is a free-tier deployment. 
+                    The server sleeps after 15 minutes of inactivity (first request after sleep takes ~30s). 
+                    Your data may reset when the server restarts. Use the Reset button anytime to restore defaults.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl">🧪</span>
+                    <h1 class="ml-3 text-xl font-bold">API Lab</h1>
+                    <span class="ml-3 text-sm opacity-75">Interactive API Learning</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button @click="showTutorial = true" class="px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded-lg transition">
+                        📚 Start Tutorial
+                    </button>
+                    <button @click="downloadPostmanCollection()" class="px-4 py-2 bg-green-500 hover:bg-green-400 rounded-lg transition">
+                        📮 Download Postman Collection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="flex h-screen">
+        
+        <!-- Sidebar - Learning Resources -->
+        <aside class="w-64 bg-white shadow-md overflow-y-auto">
+            <div class="p-4">
+                <h2 class="text-lg font-bold mb-4">📚 Learn</h2>
+                
+                <div class="space-y-2">
+                    <button @click="activeLesson = 'api'" 
+                            :class="activeLesson === 'api' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition">
+                        What is an API?
+                    </button>
+                    <button @click="activeLesson = 'http'" 
+                            :class="activeLesson === 'http' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition">
+                        HTTP Methods
+                    </button>
+                    <button @click="activeLesson = 'status'" 
+                            :class="activeLesson === 'status' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition">
+                        Status Codes
+                    </button>
+                    <button @click="activeLesson = 'json'" 
+                            :class="activeLesson === 'json' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition">
+                        Understanding JSON
+                    </button>
+                    <button @click="activeLesson = 'auth'" 
+                            :class="activeLesson === 'auth' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition">
+                        Authentication
+                    </button>
+                </div>
+
+                <!-- Learning Content Display -->
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg text-sm" x-show="activeLesson">
+                    <div x-show="activeLesson === 'api'">
+                        <h3 class="font-bold mb-2">What is an API?</h3>
+                        <p class="text-gray-700 mb-2">
+                            An API (Application Programming Interface) is how two programs talk to each other.
+                        </p>
+                        <p class="text-gray-700 mb-2">
+                            Think of it like a waiter in a restaurant:
+                        </p>
+                        <ul class="list-disc list-inside text-gray-600 text-xs space-y-1">
+                            <li>You (client) tell the waiter what you want</li>
+                            <li>Waiter (API) tells the kitchen (server)</li>
+                            <li>Kitchen makes your food (processes request)</li>
+                            <li>Waiter brings it back (returns response)</li>
+                        </ul>
+                    </div>
+                    
+                    <div x-show="activeLesson === 'http'">
+                        <h3 class="font-bold mb-2">HTTP Methods</h3>
+                        <div class="space-y-2 text-xs">
+                            <div><strong class="text-blue-600">GET:</strong> Fetch data (like reading a book)</div>
+                            <div><strong class="text-green-600">POST:</strong> Create data (like adding a new item)</div>
+                            <div><strong class="text-yellow-600">PUT:</strong> Update data (like editing content)</div>
+                            <div><strong class="text-red-600">DELETE:</strong> Remove data (like deleting a file)</div>
+                        </div>
+                    </div>
+                    
+                    <div x-show="activeLesson === 'status'">
+                        <h3 class="font-bold mb-2">Status Codes</h3>
+                        <div class="space-y-2 text-xs">
+                            <div><strong class="status-2xx">2xx Success:</strong> Request worked!</div>
+                            <div class="ml-2">200 OK, 201 Created, 204 No Content</div>
+                            <div><strong class="status-4xx">4xx Client Error:</strong> You made a mistake</div>
+                            <div class="ml-2">400 Bad Request, 401 Unauthorized, 404 Not Found</div>
+                            <div><strong class="status-5xx">5xx Server Error:</strong> Server broke</div>
+                            <div class="ml-2">500 Internal Error, 503 Unavailable</div>
+                        </div>
+                    </div>
+                    
+                    <div x-show="activeLesson === 'json'">
+                        <h3 class="font-bold mb-2">What is JSON?</h3>
+                        <p class="text-gray-700 mb-2 text-xs">
+                            JSON is how APIs exchange data. It's like a digital form with key-value pairs.
+                        </p>
+                        <pre class="bg-gray-800 text-white p-2 rounded text-xs">{
+  "name": "Alice",
+  "age": 30,
+  "active": true
+}</pre>
+                    </div>
+                    
+                    <div x-show="activeLesson === 'auth'">
+                        <h3 class="font-bold mb-2">Authentication</h3>
+                        <p class="text-gray-700 mb-2 text-xs">
+                            <strong>Basic Auth:</strong> Send username + password with every request.
+                        </p>
+                        <p class="text-gray-700 mb-2 text-xs">
+                            <strong>Token Auth (JWT):</strong> Login once, get a token, reuse it.
+                        </p>
+                        <p class="text-gray-600 text-xs">Token auth is more secure for modern APIs.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-6">
+            
+            <!-- Tabs -->
+            <div class="mb-6 border-b border-gray-200">
+                <nav class="flex space-x-8">
+                    <button @click="activeTab = 'playground'" 
+                            :class="activeTab === 'playground' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        🚀 Playground
+                    </button>
+
+                    <button @click="activeTab = 'database'; loadDatabaseTables()" 
+                            :class="activeTab === 'database' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        📊 Database
+                    </button>
+                    <button @click="activeTab = 'logs'; loadLogs()" 
+                            :class="activeTab === 'logs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        📜 Logs
+                    </button>
+                    <button @click="activeTab = 'settings'" 
+                            :class="activeTab === 'settings' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        ⚙️ Settings
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content: Playground -->
+            <div x-show="activeTab === 'playground'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6">🚀 Make an API Request</h2>
+                    
+                    <!-- Method Selector -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">HTTP Method</label>
+                        <div class="flex space-x-2">
+                            <button @click="method = 'GET'" :class="method === 'GET' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg">GET</button>
+                            <button @click="method = 'POST'" :class="method === 'POST' ? 'bg-green-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg">POST</button>
+                            <button @click="method = 'PUT'" :class="method === 'PUT' ? 'bg-yellow-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg">PUT</button>
+                            <button @click="method = 'DELETE'" :class="method === 'DELETE' ? 'bg-red-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg">DELETE</button>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint Input -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Endpoint</label>
+                        <input type="text" x-model="endpoint" 
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                               placeholder="/api/todos">
+                        <p class="text-xs text-gray-500 mt-1">💡 Try: /api/todos, /api/auth/login, /api/health</p>
+                    </div>
+
+                    <!-- Auth Selector -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">🔐 Authentication</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" x-model="authType" value="none" class="mr-2">
+                                None
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" x-model="authType" value="basic" class="mr-2">
+                                Basic Auth
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" x-model="authType" value="token" class="mr-2">
+                                Token Auth
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Basic Auth Credentials -->
+                    <div x-show="authType === 'basic'" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Email</label>
+                                <input type="email" x-model="basicAuth.username" 
+                                       class="w-full px-3 py-2 border rounded-lg"
+                                       placeholder="testuser@apilab.dev">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Password</label>
+                                <input type="password" x-model="basicAuth.password" 
+                                       class="w-full px-3 py-2 border rounded-lg"
+                                       placeholder="test123">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Token Auth -->
+                    <div x-show="authType === 'token'" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <div x-show="!token">
+                            <p class="text-sm text-gray-600 mb-2">You need to login first to get a token.</p>
+                            <div class="grid grid-cols-2 gap-4 mb-2">
+                                <input type="email" x-model="loginEmail" 
+                                       class="px-3 py-2 border rounded-lg"
+                                       placeholder="testuser@apilab.dev">
+                                <input type="password" x-model="loginPassword" 
+                                       class="px-3 py-2 border rounded-lg"
+                                       placeholder="test123">
+                            </div>
+                            <button @click="login()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                Login
+                            </button>
+                        </div>
+                        <div x-show="token">
+                            <p class="text-sm text-green-600 mb-2">
+                                ✅ Logged in as: <span x-text="currentUser?.email || 'Unknown'"></span>
+                            </p>
+                            <textarea x-model="token" readonly class="w-full px-3 py-2 border rounded-lg font-mono text-xs" rows="3"></textarea>
+                            <button @click="token = null; currentUser = null; localStorage.removeItem('apilab_token')" class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-sm">
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Request Body -->
+                    <div x-show="method === 'POST' || method === 'PUT'" class="mb-4">
+                        <label class="block text-sm font-medium mb-2">📝 Request Body (JSON)</label>
+                        <textarea x-model="requestBody" 
+                                  class="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                                  rows="6"
+                                  placeholder='{\n  "title": "My new todo",\n  "completed": false\n}'></textarea>
+                        <button @click="formatJSON()" class="mt-2 px-3 py-1 bg-gray-200 rounded text-sm">
+                            Format JSON
+                        </button>
+                    </div>
+
+                    <!-- Send Button -->
+                    <button @click="sendRequest()" 
+                            :disabled="loading"
+                            class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition">
+                        <span x-show="!loading">Send Request ➜</span>
+                        <span x-show="loading">Sending...</span>
+                    </button>
+
+                    <!-- Response Display -->
+                    <div x-show="response" class="mt-6">
+                        <h3 class="text-lg font-bold mb-3">📨 Response</h3>
+                        
+                        <div class="flex items-center mb-3 space-x-4">
+                            <div>
+                                <span class="text-sm text-gray-600">Status:</span>
+                                <span :class="`font-bold ${getStatusClass(response?.status)}`" x-text="response?.status"></span>
+                                <span x-text="response?.statusText"></span>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600">Time:</span>
+                                <span class="font-mono" x-text="`${response?.time}ms`"></span>
+                            </div>
+                        </div>
+
+                        <div class="code-block" x-text="formatResponseBody()"></div>
+                        
+                        <div x-show="response?.status >= 400" class="mt-3 p-3 bg-red-50 border-l-4 border-red-400 text-sm">
+                            <p class="font-bold text-red-800">💡 What does this mean?</p>
+                            <p class="text-red-700" x-text="getStatusExplanation(response?.status)"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Database -->
+            <div x-show="activeTab === 'database'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">📊 Live Database</h2>
+                        <button @click="loadDatabaseTables()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            🔄 Refresh
+                        </button>
+                    </div>
+
+                    <!-- Login Notice -->
+                    <div x-show="!token" class="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400">
+                        <p class="text-sm text-blue-800">
+                            <strong>🔐 Login Required:</strong> Please login with Token Auth to view database tables.
+                        </p>
+                    </div>
+
+                    <!-- Table Selector -->
+                    <div class="mb-4 flex space-x-2">
+                        <button @click="dbTable = 'todos'; loadDatabaseTables()" 
+                                :class="dbTable === 'todos' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                class="px-4 py-2 rounded-lg">
+                            Todos (<span x-text="dbData.todos?.length || 0"></span>)
+                        </button>
+                        <button @click="dbTable = 'users'; loadDatabaseTables()" 
+                                :class="dbTable === 'users' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                class="px-4 py-2 rounded-lg">
+                            Users (<span x-text="dbData.users?.length || 0"></span>)
+                        </button>
+                        <button @click="dbTable = 'request_logs'; loadDatabaseTables()" 
+                                :class="dbTable === 'request_logs' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                class="px-4 py-2 rounded-lg">
+                            Logs (<span x-text="dbData.request_logs?.length || 0"></span>)
+                        </button>
+                    </div>
+
+                    <!-- Empty State / No Data Message -->
+                    <div x-show="!token || (dbData[dbTable]?.length === 0)" class="text-center py-12">
+                        <div class="text-gray-400 text-6xl mb-4">📊</div>
+                        <div x-show="!token">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Login Required</h3>
+                            <p class="text-gray-600 mb-4">Please login with Token Auth to view database tables</p>
+                            <button @click="activeTab = 'playground'" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                Go to Playground to Login
+                            </button>
+                        </div>
+                        <div x-show="token && dbData[dbTable]?.length === 0">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Data Found</h3>
+                            <p class="text-gray-600">The <span x-text="dbTable"></span> table is empty</p>
+                        </div>
+                    </div>
+
+                    <!-- Table Display -->
+                    <div class="overflow-x-auto" x-show="token && dbData[dbTable]?.length > 0">
+                        <!-- Todos Table -->
+                        <table x-show="dbTable === 'todos' && dbData.todos" class="w-full border-collapse border">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border p-2 text-left">ID</th>
+                                    <th class="border p-2 text-left">Title</th>
+                                    <th class="border p-2 text-left">Done?</th>
+                                    <th class="border p-2 text-left">Owner</th>
+                                    <th class="border p-2 text-left">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="todo in dbData.todos" :key="todo.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border p-2" x-text="todo.id"></td>
+                                        <td class="border p-2" x-text="todo.title"></td>
+                                        <td class="border p-2">
+                                            <span x-text="todo.completed ? '✅' : '⬜'"></span>
+                                        </td>
+                                        <td class="border p-2 text-xs" x-text="todo.owner_email"></td>
+                                        <td class="border p-2 text-xs" x-text="formatDate(todo.created_at)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <!-- Users Table -->
+                        <table x-show="dbTable === 'users' && dbData.users" class="w-full border-collapse border">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border p-2 text-left">ID</th>
+                                    <th class="border p-2 text-left">Email</th>
+                                    <th class="border p-2 text-left">Role</th>
+                                    <th class="border p-2 text-left">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="user in dbData.users" :key="user.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border p-2" x-text="user.id"></td>
+                                        <td class="border p-2" x-text="user.email"></td>
+                                        <td class="border p-2">
+                                            <span :class="user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'"
+                                                  class="px-2 py-1 rounded text-xs font-medium"
+                                                  x-text="user.role"></span>
+                                        </td>
+                                        <td class="border p-2 text-xs" x-text="formatDate(user.created_at)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <!-- Request Logs Table -->
+                        <table x-show="dbTable === 'request_logs' && dbData.request_logs" class="w-full border-collapse border text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border p-2 text-left">Method</th>
+                                    <th class="border p-2 text-left">Path</th>
+                                    <th class="border p-2 text-left">Status</th>
+                                    <th class="border p-2 text-left">Time</th>
+                                    <th class="border p-2 text-left">Auth</th>
+                                    <th class="border p-2 text-left">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="log in dbData.request_logs" :key="log.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border p-2 font-mono" x-text="log.method"></td>
+                                        <td class="border p-2 text-xs" x-text="log.path"></td>
+                                        <td class="border p-2" :class="getStatusClass(log.status_code)" x-text="log.status_code"></td>
+                                        <td class="border p-2" x-text="`${log.latency_ms}ms`"></td>
+                                        <td class="border p-2 text-xs" x-text="log.auth_method"></td>
+                                        <td class="border p-2 text-xs" x-text="formatDate(log.timestamp)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 text-sm">
+                        <p class="text-blue-800">
+                            💡 This table updates in real-time when you make API requests. Try creating a todo and watch a new row appear here!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Logs (similar structure to database, will be populated via Alpine.js) -->
+            <div x-show="activeTab === 'logs'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6">📜 Request History</h2>
+                    <p class="text-gray-600">Request logs will appear here...</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Settings -->
+            <div x-show="activeTab === 'settings'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6">⚙️ Settings</h2>
+                    
+                    <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400">
+                        <p class="text-sm text-blue-700">
+                            <strong>💡 Platform Info:</strong> This app runs on Render's free tier. 
+                            The server sleeps after 15 minutes of inactivity. Your first request after sleep 
+                            will take ~30 seconds while the server wakes up. This is normal!
+                        </p>
+                    </div>
+
+                    <!-- Error Playground Section -->
+                    <div class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-400">
+                        <h3 class="text-lg font-bold mb-3">🔥 Error Playground</h3>
+                        <p class="text-sm text-gray-700 mb-3">
+                            Simulate API failures to learn error handling. When enabled, 
+                            some requests will randomly fail with realistic errors.
+                        </p>
+                        
+                        <div class="flex items-center mb-3">
+                            <input type="checkbox" x-model="errorPlaygroundEnabled" id="errorPlayground" class="mr-2">
+                            <label for="errorPlayground" class="text-sm font-medium">Enable Error Playground</label>
+                        </div>
+                        
+                        <div x-show="errorPlaygroundEnabled" class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">
+                                    Chaos Level: <span x-text="Math.round(chaosLevel * 100) + '%'"></span>
+                                </label>
+                                <input type="range" x-model.number="chaosLevel" min="0.05" max="0.5" step="0.05" class="w-full">
+                                <p class="text-xs text-gray-600 mt-1">Higher = more frequent errors (good for learning!)</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Simulate Latency (ms):</label>
+                                <input type="number" x-model.number="simulateLatency" min="0" max="3000" step="100" 
+                                       class="px-3 py-1 border rounded">
+                                <p class="text-xs text-gray-600 mt-1">Add artificial delay to test timeout handling</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-bold mb-4">🔄 Reset Database</h3>
+                        <p class="text-gray-600 mb-4">
+                            This will permanently delete all data and restore default seed data:
+                        </p>
+                        <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
+                            <li>2 default users (admin, testuser)</li>
+                            <li>5 sample todos</li>
+                            <li>Clear all request logs</li>
+                        </ul>
+                        <p class="text-red-600 font-medium mb-4">⚠️ You cannot undo this action!</p>
+                        
+                        <button @click="showResetConfirm = true" 
+                                class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+                            Reset Everything 🔴
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div x-show="showResetConfirm" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+         x-cloak>
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">⚠️ Confirm Reset</h3>
+            <p class="text-gray-700 mb-4">
+                Are you absolutely sure? This will delete ALL your data and cannot be undone.
+            </p>
+            <div class="flex justify-end space-x-3">
+                <button @click="showResetConfirm = false" 
+                        class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                    Cancel
+                </button>
+                <button @click="resetDatabase()" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Yes, Reset Everything
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alpine.js App Data -->
+    <script>
+        function appData() {
+            return {
+                // Tab & Lesson state
+                activeTab: 'playground',
+                activeLesson: 'api',
+                
+                // Request state
+                method: 'GET',
+                endpoint: '/api/todos',
+                authType: 'none',
+                basicAuth: {
+                    username: 'testuser@apilab.dev',
+                    password: 'test123'
+                },
+                token: null,
+                loginEmail: 'testuser@apilab.dev',
+                loginPassword: 'test123',
+                currentUser: null,
+                requestBody: '{\n  "title": "My new todo",\n  "description": "Created from API Lab",\n  "completed": false\n}',
+                loading: false,
+                response: null,
+                
+                // Database state
+                dbTable: 'todos',
+                dbData: {
+                    todos: [],
+                    users: [],
+                    request_logs: []
+                },
+                
+                // Logs state
+                logs: [],
+                
+                // Scenarios state
+                scenarios: [],
+                currentScenario: null,
+                currentStep: 0,
+                
+                // Error Playground state
+                errorPlaygroundEnabled: false,
+                chaosLevel: 0.1,
+                simulateLatency: 0,
+                
+                // UI state
+                showTutorial: false,
+                showResetConfirm: false,
+                
+                init() {
+                    console.log('API Lab initialized');
+                    // Load token from localStorage if exists
+                    const savedToken = localStorage.getItem('apilab_token');
+                    if (savedToken) {
+                        this.token = savedToken;
+                    }
+                },
+                
+                async sendRequest() {
+                    this.loading = true;
+                    this.response = null;
+                    
+                    const startTime = performance.now();
+                    
+                    try {
+                        const headers = {
+                            'Content-Type': 'application/json'
+                        };
+                        
+                        // Add auth header
+                        if (this.authType === 'basic') {
+                            const credentials = btoa(`${this.basicAuth.username}:${this.basicAuth.password}`);
+                            headers['Authorization'] = `Basic ${credentials}`;
+                        } else if (this.authType === 'token' && this.token) {
+                            headers['Authorization'] = `Bearer ${this.token}`;
+                        }
+                        
+                        const options = {
+                            method: this.method,
+                            headers: headers
+                        };
+                        
+                        if ((this.method === 'POST' || this.method === 'PUT') && this.requestBody) {
+                            options.body = this.requestBody;
+                        }
+                        
+                        // Build endpoint URL with error playground params if enabled
+                        let endpoint = this.endpoint;
+                        if (this.errorPlaygroundEnabled) {
+                            const params = new URLSearchParams({
+                                error_playground: 'true',
+                                chaos_level: this.chaosLevel.toString(),
+                                simulate_latency: this.simulateLatency.toString()
+                            });
+                            endpoint += (endpoint.includes('?') ? '&' : '?') + params.toString();
+                        }
+                        
+                        const res = await fetch(endpoint, options);
+                        const endTime = performance.now();
+                        
+                        let data;
+                        try {
+                            data = await res.json();
+                        } catch (e) {
+                            data = null;
+                        }
+                        
+                        this.response = {
+                            status: res.status,
+                            statusText: res.statusText,
+                            time: Math.round(endTime - startTime),
+                            data: data
+                        };
+                        
+                        // Auto-refresh database if on that tab
+                        if (this.activeTab === 'database') {
+                            setTimeout(() => this.loadDatabaseTables(), 500);
+                        }
+                        
+                    } catch (error) {
+                        this.response = {
+                            status: 0,
+                            statusText: 'Network Error',
+                            time: 0,
+                            data: { error: error.message }
+                        };
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                async login() {
+                    try {
+                        const res = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: this.loginEmail,
+                                password: this.loginPassword
+                            })
+                        });
+                        
+                        if (res.ok) {
+                            const data = await res.json();
+                            this.token = data.token;
+                            this.currentUser = data.user;
+                            localStorage.setItem('apilab_token', data.token);
+                            alert('✅ Login successful!');
+                        } else {
+                            const error = await res.json();
+                            alert(`❌ Login failed: ${error.error}`);
+                        }
+                    } catch (error) {
+                        alert(`❌ Login error: ${error.message}`);
+                    }
+                },
+                
+                async loadDatabaseTables() {
+                    // Need to be logged in to view database
+                    if (!this.token) {
+                        // Don't show alert on initial tab click - the UI banner will guide them
+                        this.dbData[this.dbTable] = [];
+                        return;
+                    }
+                    
+                    try {
+                        const res = await fetch(`/api/admin/db/tables/${this.dbTable}`, {
+                            headers: {
+                                'Authorization': `Bearer ${this.token}`
+                            }
+                        });
+                        
+                        if (res.ok) {
+                            const data = await res.json();
+                            this.dbData[this.dbTable] = data.rows;
+                        } else {
+                            const error = await res.json();
+                            const errorMsg = error.error || error.msg || 'Unknown error';
+                            console.error('Database load error:', errorMsg);
+                            // Clear the data to show empty state
+                            this.dbData[this.dbTable] = [];
+                        }
+                    } catch (error) {
+                        console.error('Error loading database:', error);
+                        this.dbData[this.dbTable] = [];
+                    }
+                },
+                
+                async loadLogs() {
+                    // TODO: Implement logs loading
+                },
+                
+                async loadScenarios() {
+                    try {
+                        const res = await fetch('/api/scenarios');
+                        const data = await res.json();
+                        this.scenarios = data.data;
+                    } catch (error) {
+                        console.error('Error loading scenarios:', error);
+                    }
+                },
+                
+                async loadScenarioDetails(id) {
+                    try {
+                        const res = await fetch(`/api/scenarios/${id}`);
+                        const data = await res.json();
+                        this.currentScenario = data.data;
+                        this.currentStep = 0;
+                    } catch (error) {
+                        console.error('Error loading scenario details:', error);
+                    }
+                },
+                
+                prefillFromScenario() {
+                    const step = this.currentScenario.steps[this.currentStep];
+                    
+                    // Switch to playground tab
+                    this.activeTab = 'playground';
+                    
+                    // Pre-fill request details
+                    this.method = step.method;
+                    this.endpoint = step.endpoint;
+                    this.authType = step.auth_type;
+                    
+                    if (step.body) {
+                        this.requestBody = JSON.stringify(step.body, null, 2);
+                    } else {
+                        this.requestBody = '';
+                    }
+                },
+                
+                async resetDatabase() {
+                    if (!this.token) {
+                        alert('Please login as admin first');
+                        return;
+                    }
+                    
+                    try {
+                        const res = await fetch('/api/admin/reset', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${this.token}`
+                            }
+                        });
+                        
+                        if (res.ok) {
+                            alert('✅ Database reset successfully!');
+                            this.showResetConfirm = false;
+                            if (this.activeTab === 'database') {
+                                this.loadDatabaseTables();
+                            }
+                        } else {
+                            const error = await res.json();
+                            alert(`❌ Reset failed: ${error.error}`);
+                        }
+                    } catch (error) {
+                        alert(`❌ Error: ${error.message}`);
+                    }
+                },
+                
+                async downloadPostmanCollection() {
+                    window.location.href = '/api/postman/collection';
+                },
+                
+                formatJSON() {
+                    try {
+                        const parsed = JSON.parse(this.requestBody);
+                        this.requestBody = JSON.stringify(parsed, null, 2);
+                    } catch (e) {
+                        alert('Invalid JSON');
+                    }
+                },
+                
+                formatResponseBody() {
+                    if (!this.response?.data) return '';
+                    return JSON.stringify(this.response.data, null, 2);
+                },
+                
+                getStatusClass(status) {
+                    if (status >= 200 && status < 300) return 'status-2xx';
+                    if (status >= 300 && status < 400) return 'status-3xx';
+                    if (status >= 400 && status < 500) return 'status-4xx';
+                    if (status >= 500) return 'status-5xx';
+                    return '';
+                },
+                
+                getStatusExplanation(status) {
+                    const explanations = {
+                        400: 'Bad Request - The data you sent is invalid or malformed.',
+                        401: 'Unauthorized - You need to provide valid authentication credentials.',
+                        403: 'Forbidden - You don\'t have permission to access this resource.',
+                        404: 'Not Found - The resource you requested doesn\'t exist.',
+                        422: 'Unprocessable Entity - Validation failed. Check the error details.',
+                        500: 'Internal Server Error - Something went wrong on the server.',
+                        503: 'Service Unavailable - The server is temporarily unavailable.'
+                    };
+                    return explanations[status] || 'An error occurred.';
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleString();
+                }
+            };
+        }
+    </script>
+
+</body>
+</html>

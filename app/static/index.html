@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Lab - Interactive API Learning Sandbox</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        [x-cloak] { display: none !important; }
+        .code-block {
+            background-color: #f8f9fa;
+            color: #1f2937;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #e5e7eb;
+        }
+        .json-key { color: #2563eb; }
+        .json-string { color: #059669; }
+        .json-number { color: #d97706; }
+        .json-boolean { color: #7c3aed; }
+        .json-null { color: #dc2626; }
+        .status-2xx { color: #10b981; }
+        .status-3xx { color: #f59e0b; }
+        .status-4xx { color: #ef4444; }
+        .status-5xx { color: #dc2626; }
+        
+        /* Syntax highlighting for JSON */
+        pre.json-display {
+            background: #f8f9fa;
+            color: #1f2937;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="appData()" x-init="init()">
+    
+    <!-- Production Warning Banner -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Learning Sandbox:</strong> This is a free-tier deployment. 
+                    The server sleeps after 15 minutes of inactivity (first request after sleep takes ~30s). 
+                    Your data may reset when the server restarts. Use the Reset button anytime to restore defaults.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl">🧪</span>
+                    <h1 class="ml-3 text-xl font-bold">API Lab</h1>
+                    <span class="ml-3 text-sm opacity-75">Interactive API Learning</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button @click="downloadPostmanCollection()" class="px-4 py-2 bg-green-500 hover:bg-green-400 rounded-lg transition">
+                        📮 Download Postman Collection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="h-screen">
+        
+        <!-- Main Content -->
+        <main class="h-full overflow-y-auto p-6">
+            
+            <!-- Tabs -->
+            <div class="mb-6 border-b border-gray-200">
+                <nav class="flex space-x-8">
+                    <button @click="activeTab = 'playground'" 
+                            :class="activeTab === 'playground' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        🚀 Playground
+                    </button>
+                    <button @click="activeTab = 'learn'" 
+                            :class="activeTab === 'learn' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        📚 Learn
+                    </button>
+                    <button @click="activeTab = 'docs'" 
+                            :class="activeTab === 'docs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        📖 API Docs
+                    </button>
+                    <button @click="activeTab = 'database'; loadDatabaseTables()" 
+                            :class="activeTab === 'database' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        📊 Database
+                    </button>
+                    <button @click="activeTab = 'settings'" 
+                            :class="activeTab === 'settings' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition">
+                        ⚙️ Settings
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Tab Content: Learn -->
+            <div x-show="activeTab === 'learn'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6">📚 API Learning Guide</h2>
+                    
+                    <!-- Learning Topic Selector -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                    <button @click="activeLesson = 'intro'" 
+                            :class="activeLesson === 'intro' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        🎯 Introduction to APIs
+                    </button>
+                    <button @click="activeLesson = 'http'" 
+                            :class="activeLesson === 'http' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        🔧 HTTP Methods (GET, POST, PUT, DELETE)
+                    </button>
+                    <button @click="activeLesson = 'status'" 
+                            :class="activeLesson === 'status' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        📊 Status Codes Explained
+                    </button>
+                    <button @click="activeLesson = 'json'" 
+                            :class="activeLesson === 'json' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        📦 Understanding JSON
+                    </button>
+                    <button @click="activeLesson = 'auth'" 
+                            :class="activeLesson === 'auth' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        🔐 Authentication Basics
+                    </button>
+                    <button @click="activeLesson = 'examples'" 
+                            :class="activeLesson === 'examples' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
+                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
+                        💻 Practical Examples
+                    </button>
+                </div>
+
+                <!-- Learning Content Display -->
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg text-sm" x-show="activeLesson">
+                    <!-- Introduction to APIs -->
+                    <div x-show="activeLesson === 'intro'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">🎯 What is an API?</h3>
+                        
+                        <div class="mb-4">
+                            <p class="text-gray-700 mb-3 leading-relaxed">
+                                <strong>API</strong> stands for <em>Application Programming Interface</em>. 
+                                Think of it as a waiter in a restaurant:
+                            </p>
+                            
+                            <div class="bg-white p-3 rounded border-l-4 border-blue-400 mb-3">
+                                <p class="text-xs font-bold text-blue-700 mb-2">🍽️ The Restaurant Analogy</p>
+                                <ul class="space-y-2 text-xs text-gray-700">
+                                    <li>👤 <strong>You (Client)</strong> - The customer who wants something</li>
+                                    <li>👨‍🍳 <strong>Kitchen (Server)</strong> - Has all the food/data</li>
+                                    <li>🤵 <strong>Waiter (API)</strong> - Takes your order to kitchen, brings food back</li>
+                                </ul>
+                            </div>
+                            
+                            <p class="text-gray-700 mb-2 leading-relaxed">
+                                When you use a mobile app to check weather, book a ride, or order food - 
+                                that app is using APIs to fetch data from servers. The app (client) asks 
+                                the API for data, and the API returns it.
+                            </p>
+                        </div>
+                        
+                        <div class="bg-green-50 p-3 rounded text-xs">
+                            <p class="font-bold text-green-800 mb-1">✨ Real Example</p>
+                            <p class="text-green-700">
+                                When you search "Pizza near me" on Google Maps, your phone sends a request to 
+                                Google's API asking "Give me pizza restaurants near [your location]". 
+                                The API searches the database and sends back a list of pizza places!
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- HTTP Methods -->
+                    <div x-show="activeLesson === 'http'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔧 HTTP Methods</h3>
+                        
+                        <p class="text-gray-700 mb-3 leading-relaxed">
+                            HTTP methods tell the server what action you want to perform. Think of them as different types of requests you make:
+                        </p>
+                        
+                        <!-- GET -->
+                        <div class="mb-3 bg-blue-50 p-3 rounded border-l-4 border-blue-500">
+                            <div class="flex items-center mb-2">
+                                <span class="font-bold text-blue-700 text-sm">GET</span>
+                                <span class="ml-2 px-2 py-0.5 bg-blue-200 text-blue-800 text-xs rounded">Read/Retrieve</span>
+                            </div>
+                            <p class="text-xs text-gray-700 mb-2">
+                                <strong>Purpose:</strong> Fetch data without changing anything
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                📖 <strong>Analogy:</strong> Reading a book from the library - you don't change the book, just view it
+                            </p>
+                            <div class="bg-white p-2 rounded text-xs font-mono">
+                                <div class="mb-1">GET /api/todos - Get all todos</div>
+                                <div>GET /api/todos/5 - Get todo with ID 5</div>
+                            </div>
+                        </div>
+                        
+                        <!-- POST -->
+                        <div class="mb-3 bg-green-50 p-3 rounded border-l-4 border-green-500">
+                            <div class="flex items-center mb-2">
+                                <span class="font-bold text-green-700 text-sm">POST</span>
+                                <span class="ml-2 px-2 py-0.5 bg-green-200 text-green-800 text-xs rounded">Create</span>
+                            </div>
+                            <p class="text-xs text-gray-700 mb-2">
+                                <strong>Purpose:</strong> Create a new resource
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                ✍️ <strong>Analogy:</strong> Adding a new contact to your phone - creates something new
+                            </p>
+                            <div class="bg-white p-2 rounded text-xs font-mono">
+                                POST /api/todos<br>
+                                Body: {"title": "Buy milk", "completed": false}
+                            </div>
+                        </div>
+                        
+                        <!-- PUT -->
+                        <div class="mb-3 bg-yellow-50 p-3 rounded border-l-4 border-yellow-500">
+                            <div class="flex items-center mb-2">
+                                <span class="font-bold text-yellow-700 text-sm">PUT</span>
+                                <span class="ml-2 px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs rounded">Full Update</span>
+                            </div>
+                            <p class="text-xs text-gray-700 mb-2">
+                                <strong>Purpose:</strong> Replace entire resource (send all fields)
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                ✏️ <strong>Analogy:</strong> Rewriting an entire contact card with all details
+                            </p>
+                            <div class="bg-white p-2 rounded text-xs font-mono">
+                                PUT /api/todos/5<br>
+                                Body: {"title": "Buy milk", "completed": true, "description": "From store"}
+                            </div>
+                        </div>
+                        
+                        <!-- PATCH -->
+                        <div class="mb-3 bg-orange-50 p-3 rounded border-l-4 border-orange-500">
+                            <div class="flex items-center mb-2">
+                                <span class="font-bold text-orange-700 text-sm">PATCH</span>
+                                <span class="ml-2 px-2 py-0.5 bg-orange-200 text-orange-800 text-xs rounded">Partial Update</span>
+                            </div>
+                            <p class="text-xs text-gray-700 mb-2">
+                                <strong>Purpose:</strong> Update only specific fields (not the whole resource)
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                🔧 <strong>Analogy:</strong> Only changing a contact's phone number, leaving everything else untouched
+                            </p>
+                            <div class="bg-white p-2 rounded text-xs font-mono">
+                                PATCH /api/todos/5<br>
+                                Body: {"completed": true}  ← Only update this field
+                            </div>
+                        </div>
+                        
+                        <!-- DELETE -->
+                        <div class="mb-3 bg-red-50 p-3 rounded border-l-4 border-red-500">
+                            <div class="flex items-center mb-2">
+                                <span class="font-bold text-red-700 text-sm">DELETE</span>
+                                <span class="ml-2 px-2 py-0.5 bg-red-200 text-red-800 text-xs rounded">Remove</span>
+                            </div>
+                            <p class="text-xs text-gray-700 mb-2">
+                                <strong>Purpose:</strong> Delete a resource
+                            </p>
+                            <p class="text-xs text-gray-600 mb-2">
+                                🗑️ <strong>Analogy:</strong> Deleting a contact from your phone - removes it permanently
+                            </p>
+                            <div class="bg-white p-2 rounded text-xs font-mono">
+                                DELETE /api/todos/5
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-3 rounded text-xs mt-3">
+                            <p class="font-bold text-purple-800 mb-1">💡 Key Differences</p>
+                            <p class="text-purple-700 space-y-1">
+                                <div>• <strong>PUT vs PATCH:</strong> PUT replaces entire resource, PATCH updates specific fields</div>
+                                <div>• <strong>ID Required:</strong> PUT, PATCH, DELETE need resource ID in URL</div>
+                                <div>• <strong>POST:</strong> Creates new resources, server assigns ID</div>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Codes -->
+                    <div x-show="activeLesson === 'status'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">📊 HTTP Status Codes</h3>
+                        
+                        <p class="text-gray-700 mb-3 text-xs leading-relaxed">
+                            Status codes are like report cards for your API requests. They tell you if your request was successful or what went wrong.
+                        </p>
+                        
+                        <div class="space-y-3">
+                            <!-- 2xx Success -->
+                            <div class="bg-green-50 p-3 rounded border-l-4 border-green-500">
+                                <div class="font-bold text-green-700 mb-2 text-sm">✅ 2xx - Success</div>
+                                <div class="space-y-1 text-xs">
+                                    <div><strong class="text-green-700">200 OK:</strong> Request succeeded, here's your data</div>
+                                    <div><strong class="text-green-700">201 Created:</strong> New resource created successfully</div>
+                                    <div><strong class="text-green-700">204 No Content:</strong> Success but no data to return (e.g., after DELETE)</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 4xx Client Errors -->
+                            <div class="bg-orange-50 p-3 rounded border-l-4 border-orange-500">
+                                <div class="font-bold text-orange-700 mb-2 text-sm">⚠️ 4xx - Your Mistake</div>
+                                <div class="space-y-1 text-xs">
+                                    <div><strong class="text-orange-700">400 Bad Request:</strong> Your data is malformed/invalid</div>
+                                    <div><strong class="text-orange-700">401 Unauthorized:</strong> You need to login first</div>
+                                    <div><strong class="text-orange-700">403 Forbidden:</strong> You're logged in but don't have permission</div>
+                                    <div><strong class="text-orange-700">404 Not Found:</strong> The resource doesn't exist</div>
+                                    <div><strong class="text-orange-700">405 Method Not Allowed:</strong> Wrong HTTP method for this endpoint</div>
+                                    <div><strong class="text-orange-700">422 Unprocessable:</strong> Data validation failed</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 5xx Server Errors -->
+                            <div class="bg-red-50 p-3 rounded border-l-4 border-red-500">
+                                <div class="font-bold text-red-700 mb-2 text-sm">❌ 5xx - Server's Problem</div>
+                                <div class="space-y-1 text-xs">
+                                    <div><strong class="text-red-700">500 Internal Server Error:</strong> Server crashed/bug</div>
+                                    <div><strong class="text-red-700">502 Bad Gateway:</strong> Server got invalid response from upstream</div>
+                                    <div><strong class="text-red-700">503 Service Unavailable:</strong> Server is down/overloaded</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-3 rounded text-xs mt-3">
+                            <p class="font-bold text-blue-800 mb-1">🎯 Quick Tip</p>
+                            <p class="text-blue-700">
+                                <strong>4xx errors = You need to fix your request</strong><br>
+                                <strong>5xx errors = Wait or contact server admin</strong>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- JSON -->
+                    <div x-show="activeLesson === 'json'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">📦 Understanding JSON</h3>
+                        
+                        <p class="text-gray-700 mb-3 text-xs leading-relaxed">
+                            <strong>JSON</strong> (JavaScript Object Notation) is the language APIs use to exchange data. 
+                            Think of it as a digital form with labeled boxes.
+                        </p>
+                        
+                        <div class="bg-blue-50 p-3 rounded mb-3">
+                            <p class="font-bold text-blue-800 text-xs mb-2">📋 Example: A Todo Item</p>
+                            <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "id": 1,
+  "title": "Buy groceries",
+  "completed": false,
+  "created_at": "2024-01-15"
+}</pre>
+                        </div>
+                        
+                        <div class="space-y-2 text-xs mb-3">
+                            <div class="flex items-start">
+                                <span class="text-blue-600 font-bold mr-2">•</span>
+                                <span><strong>"id": 1</strong> - A number (no quotes)</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-green-600 font-bold mr-2">•</span>
+                                <span><strong>"title": "..."</strong> - A string (text in quotes)</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-purple-600 font-bold mr-2">•</span>
+                                <span><strong>"completed": false</strong> - A boolean (true/false)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 p-3 rounded text-xs mb-3">
+                            <p class="font-bold text-yellow-800 mb-1">⚠️ Common Mistakes</p>
+                            <div class="space-y-1 text-yellow-700">
+                                <div>❌ Missing quotes around keys: {id: 1} ← Wrong!</div>
+                                <div>✅ Always use double quotes: {"id": 1} ← Correct!</div>
+                                <div>❌ Trailing commas: {"id": 1,} ← Wrong!</div>
+                                <div>✅ No comma after last item: {"id": 1} ← Correct!</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-3 rounded text-xs">
+                            <p class="font-bold text-green-800 mb-1">🎨 JSON Arrays</p>
+                            <p class="text-green-700 mb-2">You can have lists of items too:</p>
+                            <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded overflow-x-auto">[
+  {"id": 1, "title": "Task 1"},
+  {"id": 2, "title": "Task 2"}
+]</pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Authentication -->
+                    <div x-show="activeLesson === 'auth'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔐 Authentication</h3>
+                        
+                        <p class="text-gray-700 mb-3 text-xs leading-relaxed">
+                            Authentication proves who you are. Like showing ID at a bank to access your account.
+                        </p>
+                        
+                        <!-- Basic Auth -->
+                        <div class="mb-3 bg-orange-50 p-3 rounded border-l-4 border-orange-400">
+                            <div class="font-bold text-orange-700 mb-2">🔑 Basic Auth</div>
+                            <p class="text-xs text-gray-700 mb-2">
+                                Send your email and password with <em>every</em> request.
+                            </p>
+                            <div class="bg-white p-2 rounded text-xs mb-2">
+                                <div class="font-mono">Authorization: Basic dGVzdHVzZXI6dGVzdDEyMw==</div>
+                                <div class="text-gray-500 mt-1">(This is base64 encoded "testuser:test123")</div>
+                            </div>
+                            <div class="flex items-center text-xs">
+                                <span class="mr-2">👍</span>
+                                <span class="text-gray-600">Simple to understand</span>
+                            </div>
+                            <div class="flex items-center text-xs">
+                                <span class="mr-2">👎</span>
+                                <span class="text-gray-600">Less secure - sends credentials repeatedly</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Token Auth -->
+                        <div class="mb-3 bg-green-50 p-3 rounded border-l-4 border-green-400">
+                            <div class="font-bold text-green-700 mb-2">🎫 Token Auth (JWT)</div>
+                            <p class="text-xs text-gray-700 mb-2">
+                                Login once, get a token, reuse it for 24 hours.
+                            </p>
+                            <div class="bg-white p-2 rounded text-xs mb-2 space-y-1">
+                                <div><strong>Step 1:</strong> POST /api/auth/login with credentials</div>
+                                <div><strong>Step 2:</strong> Get token: "eyJhbGciOiJIUzI1..."</div>
+                                <div><strong>Step 3:</strong> Use token in all requests:</div>
+                                <div class="font-mono ml-4">Authorization: Bearer eyJhbGci...</div>
+                            </div>
+                            <div class="flex items-center text-xs">
+                                <span class="mr-2">👍</span>
+                                <span class="text-gray-600">More secure</span>
+                            </div>
+                            <div class="flex items-center text-xs">
+                                <span class="mr-2">👍</span>
+                                <span class="text-gray-600">Industry standard (used by Facebook, Twitter, etc.)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-3 rounded text-xs">
+                            <p class="font-bold text-blue-800 mb-1">🎯 Which to Use?</p>
+                            <p class="text-blue-700">
+                                In this lab, use <strong>Token Auth</strong> for most experiments. 
+                                It's what real-world APIs use!
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Practical Examples -->
+                    <div x-show="activeLesson === 'examples'">
+                        <h3 class="font-bold text-lg mb-3 text-blue-700">💻 Practical Examples</h3>
+                        
+                        <p class="text-gray-700 mb-3 text-xs">
+                            Copy these commands and try them in Postman or your terminal!
+                        </p>
+                        
+                        <!-- Example 1: Login -->
+                        <div class="mb-4 bg-gray-50 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">1️⃣ Login to Get Token</div>
+                            <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
+curl -X POST http://localhost:5001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"testuser@apilab.dev","password":"test123"}'
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                <strong>Expected Response:</strong>
+                            </div>
+                            <div class="bg-green-50 p-2 rounded text-xs mt-1">
+{"token": "eyJhbGc...", "user": {"email": "testuser@apilab.dev"}}
+                            </div>
+                        </div>
+                        
+                        <!-- Example 2: Get All Todos -->
+                        <div class="mb-4 bg-gray-50 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">2️⃣ Get All Todos</div>
+                            <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
+curl -X GET http://localhost:5001/api/todos \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                <strong>Expected Response:</strong> Array of todo items
+                            </div>
+                        </div>
+                        
+                        <!-- Example 3: Get Single Todo -->
+                        <div class="mb-4 bg-gray-50 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">3️⃣ Get Single Todo by ID</div>
+                            <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
+curl -X GET http://localhost:5001/api/todos/1 \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                <strong>Expected Response:</strong> One specific todo item
+                            </div>
+                        </div>
+                        
+                        <!-- Example 4: Create Todo -->
+                        <div class="mb-4 bg-gray-50 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">4️⃣ Create New Todo</div>
+                            <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
+curl -X POST http://localhost:5001/api/todos \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Buy milk","description":"2% milk","completed":false}'
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                <strong>Expected Response:</strong> Newly created todo with ID
+                            </div>
+                        </div>
+                        
+                        <!-- Example 5: Update Todo -->
+                        <div class="mb-4 bg-gray-50 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">5️⃣ Update Todo (Mark as Complete)</div>
+                            <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
+curl -X PUT http://localhost:5001/api/todos/1 \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"completed":true}'
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                <strong>Note:</strong> ID in URL is required!
+                            </div>
+                        </div>
+                        
+                        <!-- Example 6: Delete Todo -->
+                        <div class="mb-4 bg-gray-50 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">6️⃣ Delete Todo</div>
+                            <div class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto mb-2">
+curl -X DELETE http://localhost:5001/api/todos/1 \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                <strong>Expected Response:</strong> 204 No Content (empty response)
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-3 rounded text-xs">
+                            <p class="font-bold text-purple-800 mb-1">💡 Pro Tip</p>
+                            <p class="text-purple-700">
+                                Replace <code class="bg-purple-200 px-1 rounded">YOUR_TOKEN_HERE</code> with 
+                                the actual token you got from step 1!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            
+            <!-- Tab Content: Playground -->
+            <div x-show="activeTab === 'playground'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6">🚀 API Playground</h2>
+                    
+                    <!-- Method Selector with Context Help -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">HTTP Method</label>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <button @click="method = 'GET'; endpoint = '/api/todos'" :class="method === 'GET' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg transition">GET</button>
+                            <button @click="method = 'POST'; endpoint = '/api/todos'" :class="method === 'POST' ? 'bg-green-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg transition">POST</button>
+                            <button @click="method = 'PUT'; endpoint = '/api/todos/1'" :class="method === 'PUT' ? 'bg-yellow-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg transition">PUT</button>
+                            <button @click="method = 'PATCH'; endpoint = '/api/todos/1'" :class="method === 'PATCH' ? 'bg-orange-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg transition">PATCH</button>
+                            <button @click="method = 'DELETE'; endpoint = '/api/todos/1'" :class="method === 'DELETE' ? 'bg-red-500 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded-lg transition">DELETE</button>
+                        </div>
+                        
+                        <!-- Contextual Help Based on Method -->
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-3 text-sm" x-show="method === 'GET'">
+                            <p class="font-semibold text-blue-800 mb-1">📖 GET Request</p>
+                            <p class="text-blue-700 text-xs mb-2">Fetch data without modifying anything.</p>
+                            <div class="text-xs space-y-1">
+                                <div>• <code class="bg-blue-200 px-1 rounded">/api/todos</code> - Get all todos</div>
+                                <div>• <code class="bg-blue-200 px-1 rounded">/api/todos/5</code> - Get specific todo by ID</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 border-l-4 border-green-400 p-3 text-sm" x-show="method === 'POST'">
+                            <p class="font-semibold text-green-800 mb-1">✍️ POST Request</p>
+                            <p class="text-green-700 text-xs mb-2">Create a new resource. Server assigns the ID.</p>
+                            <div class="text-xs space-y-1">
+                                <div>• Endpoint: <code class="bg-green-200 px-1 rounded">/api/todos</code> (no ID in URL)</div>
+                                <div>• Requires request body with todo data</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm" x-show="method === 'PUT'">
+                            <p class="font-semibold text-yellow-800 mb-1">✏️ PUT Request</p>
+                            <p class="text-yellow-700 text-xs mb-2">Replace entire resource (full update).</p>
+                            <div class="text-xs space-y-1">
+                                <div>• <strong>Must include ID:</strong> <code class="bg-yellow-200 px-1 rounded">/api/todos/5</code></div>
+                                <div>• Requires complete request body with all fields</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-orange-50 border-l-4 border-orange-400 p-3 text-sm" x-show="method === 'PATCH'">
+                            <p class="font-semibold text-orange-800 mb-1">🔧 PATCH Request</p>
+                            <p class="text-orange-700 text-xs mb-2">Partially update a resource (only specific fields).</p>
+                            <div class="text-xs space-y-1">
+                                <div>• <strong>Must include ID:</strong> <code class="bg-orange-200 px-1 rounded">/api/todos/5</code></div>
+                                <div>• Only include fields you want to update</div>
+                                <div>• Example: <code class="bg-orange-200 px-1 rounded">{"completed": true}</code> - only updates completion status</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-red-50 border-l-4 border-red-400 p-3 text-sm" x-show="method === 'DELETE'">
+                            <p class="font-semibold text-red-800 mb-1">🗑️ DELETE Request</p>
+                            <p class="text-red-700 text-xs mb-2">Permanently delete a resource.</p>
+                            <div class="text-xs space-y-1">
+                                <div>• <strong>Must include ID:</strong> <code class="bg-red-200 px-1 rounded">/api/todos/5</code></div>
+                                <div>• No request body needed</div>
+                                <div>• Returns 204 No Content on success</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint Input -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Endpoint URL</label>
+                        <input type="text" x-model="endpoint" 
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                               placeholder="/api/todos">
+                        <p class="text-xs text-gray-500 mt-1">💡 For PUT/DELETE, add ID: /api/todos/5</p>
+                    </div>
+
+                    <!-- Auth Selector -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">🔐 Authentication</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" x-model="authType" value="none" class="mr-2">
+                                None
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" x-model="authType" value="basic" class="mr-2">
+                                Basic Auth
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" x-model="authType" value="token" class="mr-2">
+                                Token Auth (Recommended)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Basic Auth Credentials -->
+                    <div x-show="authType === 'basic'" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Email</label>
+                                <input type="email" x-model="basicAuth.username" 
+                                       class="w-full px-3 py-2 border rounded-lg"
+                                       placeholder="testuser@apilab.dev">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Password</label>
+                                <input type="password" x-model="basicAuth.password" 
+                                       class="w-full px-3 py-2 border rounded-lg"
+                                       placeholder="test123">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Token Auth -->
+                    <div x-show="authType === 'token'" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <div x-show="!token">
+                            <p class="text-sm text-gray-600 mb-2">You need to login first to get a token.</p>
+                            <div class="grid grid-cols-2 gap-4 mb-2">
+                                <input type="email" x-model="loginEmail" 
+                                       class="px-3 py-2 border rounded-lg"
+                                       placeholder="testuser@apilab.dev">
+                                <input type="password" x-model="loginPassword" 
+                                       class="px-3 py-2 border rounded-lg"
+                                       placeholder="test123">
+                            </div>
+                            <button @click="login()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                Login
+                            </button>
+                        </div>
+                        <div x-show="token">
+                            <p class="text-sm text-green-600 mb-2">
+                                ✅ Logged in as: <span x-text="currentUser?.email || 'Unknown'"></span>
+                            </p>
+                            <textarea x-model="token" readonly class="w-full px-3 py-2 border rounded-lg font-mono text-xs" rows="2"></textarea>
+                            <button @click="token = null; currentUser = null; localStorage.removeItem('apilab_token')" class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-sm">
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Request Body -->
+                    <div x-show="method === 'POST' || method === 'PUT' || method === 'PATCH'" class="mb-4">
+                        <label class="block text-sm font-medium mb-2">📝 Request Body (JSON)</label>
+                        <textarea x-model="requestBody" 
+                                  class="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                                  rows="6"
+                                  placeholder='{\n  "title": "My new todo",\n  "completed": false\n}'></textarea>
+                        <button @click="formatJSON()" class="mt-2 px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300">
+                            Format JSON
+                        </button>
+                    </div>
+
+                    <!-- Send Button -->
+                    <button @click="sendRequest()" 
+                            :disabled="loading"
+                            class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition text-lg">
+                        <span x-show="!loading">Send Request ➜</span>
+                        <span x-show="loading">Sending...</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Request/Response Section - Separate Card -->
+            <div x-show="activeTab === 'playground' && (lastRequest || response)" x-cloak class="mt-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold mb-6">📡 Request & Response</h2>
+
+                    <!-- Request Details (after sending) -->
+                    <div x-show="lastRequest" class="mb-8">
+                        <h3 class="text-lg font-bold mb-3 flex items-center border-b pb-2">
+                            <span class="mr-2">📤</span>
+                            Request Sent
+                        </h3>
+                        
+                        <div class="space-y-3 text-sm">
+                            <div class="flex">
+                                <span class="font-semibold w-32 text-gray-600">Method:</span>
+                                <span class="font-mono font-bold" x-text="lastRequest?.method"></span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-semibold w-32 text-gray-600">URL:</span>
+                                <span class="font-mono text-xs break-all" x-text="lastRequest?.url"></span>
+                            </div>
+                            
+                            <div x-show="lastRequest?.headers && Object.keys(lastRequest.headers).length > 0">
+                                <span class="font-semibold text-gray-600">Headers:</span>
+                                <div class="mt-2 bg-gray-50 rounded-lg p-3 font-mono text-xs space-y-1 border">
+                                    <template x-for="(value, key) in lastRequest?.headers" :key="key">
+                                        <div>
+                                            <span class="text-blue-600 font-semibold" x-text="key"></span>: 
+                                            <span class="text-gray-700" x-text="value.length > 50 ? value.substring(0, 50) + '...' : value"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <div x-show="lastRequest?.body">
+                                <span class="font-semibold text-gray-600">Body:</span>
+                                <pre class="mt-2 bg-gray-50 rounded-lg p-3 font-mono text-xs overflow-x-auto border" x-text="lastRequest?.body"></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Response Display -->
+                    <div x-show="response">
+                        <h3 class="text-lg font-bold mb-3 flex items-center border-b pb-2">
+                            <span class="mr-2">📨</span>
+                            Response
+                        </h3>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center space-x-6 text-sm">
+                                <div class="flex">
+                                    <span class="font-semibold w-20 text-gray-600">Status:</span>
+                                    <span :class="`font-bold ${getStatusClass(response?.status)}`" x-text="response?.status"></span>
+                                    <span class="ml-2 text-gray-700" x-text="response?.statusText"></span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600">Time:</span>
+                                    <span class="ml-2 font-mono" x-text="`${response?.time}ms`"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex">
+                                <span class="font-semibold w-32 text-gray-600">Content-Type:</span>
+                                <span class="font-mono text-xs text-gray-700">application/json</span>
+                            </div>
+                        </div>
+
+                        <!-- Response Body Label -->
+                        <div class="mb-2">
+                            <span class="font-semibold text-gray-600 text-sm">Response Body:</span>
+                        </div>
+
+                        <!-- Formatted JSON Response -->
+                        <div class="bg-gray-50 rounded-lg p-4 overflow-x-auto border">
+                            <pre class="text-sm" x-html="formatResponseJSON()"></pre>
+                        </div>
+                        
+                        <div x-show="response?.status >= 400" class="mt-3 p-3 bg-red-50 border-l-4 border-red-400 text-sm">
+                            <p class="font-bold text-red-800">💡 What does this mean?</p>
+                            <p class="text-red-700" x-text="getStatusExplanation(response?.status)"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: API Documentation -->
+            <div x-show="activeTab === 'docs'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6">📖 API Documentation Tutorial</h2>
+                    
+                    <div class="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                        <p class="text-sm text-blue-800 mb-2">
+                            <strong>Base URL:</strong> <code class="bg-blue-100 px-2 py-1 rounded">http://localhost:5001/api</code>
+                        </p>
+                        <p class="text-xs text-blue-700">
+                            This tutorial will teach you how to read and understand API documentation like a Business Analyst.
+                        </p>
+                    </div>
+
+                    <!-- Quick Reference Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <a href="#data-models" class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                            <div class="font-bold text-blue-800 mb-1">📋 Data Models</div>
+                            <div class="text-xs text-blue-600">Field definitions & requirements</div>
+                        </a>
+                        <a href="#status-codes" class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border-2 border-green-200 hover:border-green-400 transition cursor-pointer">
+                            <div class="font-bold text-green-800 mb-1">✅ Status Codes</div>
+                            <div class="text-xs text-green-600">Success & error responses</div>
+                        </a>
+                        <a href="#error-codes" class="p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-lg border-2 border-red-200 hover:border-red-400 transition cursor-pointer">
+                            <div class="font-bold text-red-800 mb-1">⚠️ Error Dictionary</div>
+                            <div class="text-xs text-red-600">Error codes & meanings</div>
+                        </a>
+                    </div>
+
+                    <!-- Data Models Section -->
+                    <div id="data-models" class="mb-8 scroll-mt-6">
+                        <h3 class="text-xl font-bold mb-4 text-blue-700 border-b-2 border-blue-200 pb-2">📋 Data Models & Field Definitions</h3>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg mb-6 border-l-4 border-purple-400">
+                            <p class="text-sm text-purple-800 mb-2">
+                                <strong>💡 For Learners:</strong> Data models define the structure of information exchanged with the API. 
+                                Understanding mandatory vs optional fields helps you write better requirements and test cases.
+                            </p>
+                        </div>
+
+                        <!-- Todo Model -->
+                        <div class="mb-6 border rounded-lg overflow-hidden">
+                            <div class="bg-blue-600 text-white px-4 py-2 font-bold">Todo Object</div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Field Name</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Type</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Required</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Description</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Example</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-xs">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-blue-600">id</td>
+                                            <td class="px-4 py-2 border-b">Integer</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-xs">Auto-generated</span></td>
+                                            <td class="px-4 py-2 border-b">Unique identifier assigned by server</td>
+                                            <td class="px-4 py-2 border-b font-mono">42</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-blue-600">title</td>
+                                            <td class="px-4 py-2 border-b">String</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">MANDATORY</span></td>
+                                            <td class="px-4 py-2 border-b">Short description of the todo (max 200 chars)</td>
+                                            <td class="px-4 py-2 border-b font-mono">"Buy groceries"</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-blue-600">description</td>
+                                            <td class="px-4 py-2 border-b">String</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">Optional</span></td>
+                                            <td class="px-4 py-2 border-b">Detailed notes (max 1000 chars)</td>
+                                            <td class="px-4 py-2 border-b font-mono">"Milk, eggs, bread"</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-blue-600">completed</td>
+                                            <td class="px-4 py-2 border-b">Boolean</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">Optional</span></td>
+                                            <td class="px-4 py-2 border-b">Completion status (default: false)</td>
+                                            <td class="px-4 py-2 border-b font-mono">true</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-blue-600">user_id</td>
+                                            <td class="px-4 py-2 border-b">Integer</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-xs">Auto-set</span></td>
+                                            <td class="px-4 py-2 border-b">Owner's user ID (from auth token)</td>
+                                            <td class="px-4 py-2 border-b font-mono">2</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-blue-600">created_at</td>
+                                            <td class="px-4 py-2 border-b">DateTime</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-xs">Auto-generated</span></td>
+                                            <td class="px-4 py-2 border-b">Timestamp when created (ISO 8601)</td>
+                                            <td class="px-4 py-2 border-b font-mono">2024-01-15T10:30:00</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 font-mono text-blue-600">updated_at</td>
+                                            <td class="px-4 py-2">DateTime</td>
+                                            <td class="px-4 py-2"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-xs">Auto-updated</span></td>
+                                            <td class="px-4 py-2">Timestamp of last update (ISO 8601)</td>
+                                            <td class="px-4 py-2 font-mono">2024-01-15T11:00:00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- User Model -->
+                        <div class="mb-6 border rounded-lg overflow-hidden">
+                            <div class="bg-purple-600 text-white px-4 py-2 font-bold">User Object</div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Field Name</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Type</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Required</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Description</th>
+                                            <th class="text-left px-4 py-2 border-b font-semibold">Example</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-xs">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-purple-600">id</td>
+                                            <td class="px-4 py-2 border-b">Integer</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-xs">Auto-generated</span></td>
+                                            <td class="px-4 py-2 border-b">Unique user identifier</td>
+                                            <td class="px-4 py-2 border-b font-mono">2</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-purple-600">email</td>
+                                            <td class="px-4 py-2 border-b">String</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">MANDATORY</span></td>
+                                            <td class="px-4 py-2 border-b">Valid email address (unique)</td>
+                                            <td class="px-4 py-2 border-b font-mono">"user@example.com"</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 border-b font-mono text-purple-600">password</td>
+                                            <td class="px-4 py-2 border-b">String</td>
+                                            <td class="px-4 py-2 border-b"><span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">MANDATORY</span></td>
+                                            <td class="px-4 py-2 border-b">Min 6 chars (stored as hash)</td>
+                                            <td class="px-4 py-2 border-b font-mono">"password123"</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 font-mono text-purple-600">role</td>
+                                            <td class="px-4 py-2">String</td>
+                                            <td class="px-4 py-2"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">Optional</span></td>
+                                            <td class="px-4 py-2">User role (default: "user")</td>
+                                            <td class="px-4 py-2 font-mono">"admin" or "user"</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Codes Section -->
+                    <div id="status-codes" class="mb-8 scroll-mt-6">
+                        <h3 class="text-xl font-bold mb-4 text-green-700 border-b-2 border-green-200 pb-2">✅ HTTP Status Code Dictionary</h3>
+                        
+                        <div class="bg-blue-50 p-4 rounded-lg mb-6 border-l-4 border-blue-400">
+                            <p class="text-sm text-blue-800 mb-2">
+                                <strong>💡 For Learners:</strong> Status codes are grouped into series by their first digit. Use this table to write comprehensive test scenarios and expected outcomes.
+                            </p>
+                            <div class="text-xs text-blue-700 space-y-1">
+                                <div><strong>2xx:</strong> Success - everything worked</div>
+                                <div><strong>3xx:</strong> Redirection - resource moved or cached</div>
+                                <div><strong>4xx:</strong> Client Error - fix your request</div>
+                                <div><strong>5xx:</strong> Server Error - wait or contact support</div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">Code</th>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">Name</th>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">Meaning</th>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">When It Happens</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs">
+                                    <!-- 2xx Success Series -->
+                                    <tr class="bg-green-100">
+                                        <td colspan="4" class="px-4 py-2 font-bold text-green-800 text-sm">
+                                            2xx - Success Codes
+                                            <span class="font-normal text-xs ml-2">→ Your request worked! The server did what you asked.</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-green-50 hover:bg-green-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-green-700">200</td>
+                                        <td class="px-4 py-3 border-b font-semibold">OK</td>
+                                        <td class="px-4 py-3 border-b">Request successful, data returned</td>
+                                        <td class="px-4 py-3 border-b">GET, PUT, PATCH requests succeed</td>
+                                    </tr>
+                                    <tr class="bg-green-50 hover:bg-green-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-green-700">201</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Created</td>
+                                        <td class="px-4 py-3 border-b">New resource successfully created</td>
+                                        <td class="px-4 py-3 border-b">POST request creates a new todo</td>
+                                    </tr>
+                                    <tr class="bg-green-50 hover:bg-green-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-green-700">204</td>
+                                        <td class="px-4 py-3 border-b font-semibold">No Content</td>
+                                        <td class="px-4 py-3 border-b">Success, but no data to return</td>
+                                        <td class="px-4 py-3 border-b">DELETE request succeeds</td>
+                                    </tr>
+                                    
+                                    <!-- 3xx Redirection Series -->
+                                    <tr class="bg-blue-100">
+                                        <td colspan="4" class="px-4 py-2 font-bold text-blue-800 text-sm">
+                                            3xx - Redirection Codes
+                                            <span class="font-normal text-xs ml-2">→ The resource has moved or needs additional action from the client.</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-blue-50 hover:bg-blue-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-blue-700">301</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Moved Permanently</td>
+                                        <td class="px-4 py-3 border-b">Resource permanently moved to new URL</td>
+                                        <td class="px-4 py-3 border-b">API endpoint URL changed permanently</td>
+                                    </tr>
+                                    <tr class="bg-blue-50 hover:bg-blue-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-blue-700">302</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Found (Temporary Redirect)</td>
+                                        <td class="px-4 py-3 border-b">Resource temporarily at different URL</td>
+                                        <td class="px-4 py-3 border-b">Temporary maintenance or A/B testing</td>
+                                    </tr>
+                                    <tr class="bg-blue-50 hover:bg-blue-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-blue-700">304</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Not Modified</td>
+                                        <td class="px-4 py-3 border-b">Cached version is still valid</td>
+                                        <td class="px-4 py-3 border-b">Data hasn't changed since last request</td>
+                                    </tr>
+                                    
+                                    <!-- 4xx Client Error Series -->
+                                    <tr class="bg-red-100">
+                                        <td colspan="4" class="px-4 py-2 font-bold text-red-800 text-sm">
+                                            4xx - Client Error Codes
+                                            <span class="font-normal text-xs ml-2">→ Something wrong with your request - check your data, authentication, or permissions.</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-red-50 hover:bg-red-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-red-700">400</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Bad Request</td>
+                                        <td class="px-4 py-3 border-b">Invalid request format or data</td>
+                                        <td class="px-4 py-3 border-b">Missing required field (e.g., no title)</td>
+                                    </tr>
+                                    <tr class="bg-red-50 hover:bg-red-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-red-700">401</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Unauthorized</td>
+                                        <td class="px-4 py-3 border-b">Missing or invalid authentication</td>
+                                        <td class="px-4 py-3 border-b">No token provided or expired token</td>
+                                    </tr>
+                                    <tr class="bg-red-50 hover:bg-red-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-red-700">403</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Forbidden</td>
+                                        <td class="px-4 py-3 border-b">Not allowed to access resource</td>
+                                        <td class="px-4 py-3 border-b">Trying to edit another user's todo</td>
+                                    </tr>
+                                    <tr class="bg-red-50 hover:bg-red-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-red-700">404</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Not Found</td>
+                                        <td class="px-4 py-3 border-b">Resource doesn't exist</td>
+                                        <td class="px-4 py-3 border-b">GET /todos/999 (ID doesn't exist)</td>
+                                    </tr>
+                                    <tr class="bg-red-50 hover:bg-red-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-red-700">422</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Unprocessable Entity</td>
+                                        <td class="px-4 py-3 border-b">Validation failed</td>
+                                        <td class="px-4 py-3 border-b">Email format invalid or duplicate</td>
+                                    </tr>
+                                    <tr class="bg-red-50 hover:bg-red-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-red-700">429</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Too Many Requests</td>
+                                        <td class="px-4 py-3 border-b">Rate limit exceeded</td>
+                                        <td class="px-4 py-3 border-b">Too many requests in short time</td>
+                                    </tr>
+                                    
+                                    <!-- 5xx Server Error Series -->
+                                    <tr class="bg-orange-100">
+                                        <td colspan="4" class="px-4 py-2 font-bold text-orange-800 text-sm">
+                                            5xx - Server Error Codes
+                                            <span class="font-normal text-xs ml-2">→ Problem on the server side - not your fault, contact support or try again later.</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-orange-50 hover:bg-orange-100">
+                                        <td class="px-4 py-3 border-b font-mono font-bold text-orange-700">500</td>
+                                        <td class="px-4 py-3 border-b font-semibold">Internal Server Error</td>
+                                        <td class="px-4 py-3 border-b">Server error (not your fault)</td>
+                                        <td class="px-4 py-3 border-b">Database crash, bug in server code</td>
+                                    </tr>
+                                    <tr class="bg-orange-50 hover:bg-orange-100">
+                                        <td class="px-4 py-3 font-mono font-bold text-orange-700">502</td>
+                                        <td class="px-4 py-3 font-semibold">Bad Gateway</td>
+                                        <td class="px-4 py-3">Invalid response from upstream server</td>
+                                        <td class="px-4 py-3">API gateway can't reach backend server</td>
+                                    </tr>
+                                    <tr class="bg-orange-50 hover:bg-orange-100">
+                                        <td class="px-4 py-3 font-mono font-bold text-orange-700">503</td>
+                                        <td class="px-4 py-3 font-semibold">Service Unavailable</td>
+                                        <td class="px-4 py-3">Server temporarily unavailable</td>
+                                        <td class="px-4 py-3">Server overloaded or under maintenance</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Error Codes Section -->
+                    <div id="error-codes" class="mb-8 scroll-mt-6">
+                        <h3 class="text-xl font-bold mb-4 text-red-700 border-b-2 border-red-200 pb-2">⚠️ Application Error Code Dictionary</h3>
+                        
+                        <div class="bg-yellow-50 p-4 rounded-lg mb-6 border-l-4 border-yellow-400">
+                            <p class="text-sm text-yellow-800">
+                                <strong>💡 For Learners:</strong> Error codes provide specific details about what went wrong. Use these to create detailed error handling requirements and user-friendly error messages.
+                            </p>
+                        </div>
+
+                        <div class="border rounded-lg overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">Error Code</th>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">HTTP Status</th>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">Description</th>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">User-Friendly Message</th>
+                                        <th class="text-left px-4 py-3 border-b font-semibold">Resolution</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">MISSING_FIELD</td>
+                                        <td class="px-4 py-3 border-b font-mono">400</td>
+                                        <td class="px-4 py-3 border-b">Required field not provided</td>
+                                        <td class="px-4 py-3 border-b">"Title is required"</td>
+                                        <td class="px-4 py-3 border-b">Include all mandatory fields</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">INVALID_FORMAT</td>
+                                        <td class="px-4 py-3 border-b font-mono">400</td>
+                                        <td class="px-4 py-3 border-b">Data format incorrect</td>
+                                        <td class="px-4 py-3 border-b">"Invalid email format"</td>
+                                        <td class="px-4 py-3 border-b">Check field format requirements</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">UNAUTHORIZED</td>
+                                        <td class="px-4 py-3 border-b font-mono">401</td>
+                                        <td class="px-4 py-3 border-b">Authentication required</td>
+                                        <td class="px-4 py-3 border-b">"Please log in to continue"</td>
+                                        <td class="px-4 py-3 border-b">Provide valid credentials</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">TOKEN_EXPIRED</td>
+                                        <td class="px-4 py-3 border-b font-mono">401</td>
+                                        <td class="px-4 py-3 border-b">JWT token has expired</td>
+                                        <td class="px-4 py-3 border-b">"Session expired, please log in again"</td>
+                                        <td class="px-4 py-3 border-b">Re-authenticate to get new token</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">FORBIDDEN</td>
+                                        <td class="px-4 py-3 border-b font-mono">403</td>
+                                        <td class="px-4 py-3 border-b">Not authorized for this action</td>
+                                        <td class="px-4 py-3 border-b">"You don't have permission"</td>
+                                        <td class="px-4 py-3 border-b">Check user permissions</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">NOT_FOUND</td>
+                                        <td class="px-4 py-3 border-b font-mono">404</td>
+                                        <td class="px-4 py-3 border-b">Resource doesn't exist</td>
+                                        <td class="px-4 py-3 border-b">"Todo not found"</td>
+                                        <td class="px-4 py-3 border-b">Verify resource ID exists</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">DUPLICATE_EMAIL</td>
+                                        <td class="px-4 py-3 border-b font-mono">422</td>
+                                        <td class="px-4 py-3 border-b">Email already registered</td>
+                                        <td class="px-4 py-3 border-b">"Email already in use"</td>
+                                        <td class="px-4 py-3 border-b">Use different email</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 border-b font-mono text-red-600 font-semibold">RATE_LIMIT</td>
+                                        <td class="px-4 py-3 border-b font-mono">429</td>
+                                        <td class="px-4 py-3 border-b">Too many requests</td>
+                                        <td class="px-4 py-3 border-b">"Slow down, try again later"</td>
+                                        <td class="px-4 py-3 border-b">Wait before retrying</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 font-mono text-red-600 font-semibold">SERVER_ERROR</td>
+                                        <td class="px-4 py-3 font-mono">500</td>
+                                        <td class="px-4 py-3">Internal server failure</td>
+                                        <td class="px-4 py-3">"Something went wrong, contact support"</td>
+                                        <td class="px-4 py-3">Report to development team</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- API Endpoints Tutorial -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-indigo-700 border-b-2 border-indigo-200 pb-2">🔌 API Endpoints Reference</h3>
+                        
+                        <div class="bg-indigo-50 p-4 rounded-lg mb-6 border-l-4 border-indigo-400">
+                            <p class="text-sm text-indigo-800 mb-2">
+                                <strong>💡 For For Learners:</strong> This section shows each API endpoint with complete request/response examples. Use this to:
+                            </p>
+                            <ul class="text-xs text-indigo-700 ml-4 list-disc space-y-1">
+                                <li>Write functional requirements and user stories</li>
+                                <li>Create test cases with expected inputs and outputs</li>
+                                <li>Document integration points for technical specifications</li>
+                                <li>Understand data flow between systems</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Authentication Endpoints -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-blue-700">🔐 Authentication</h3>
+                        
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded mr-2">POST</span>
+                                <span class="font-mono text-sm">/auth/login</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Login to get JWT token</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p class="text-xs font-semibold mb-1">Request Body:</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "email": "testuser@apilab.dev",
+  "password": "test123"
+}</pre>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="text-xs font-semibold mb-1">Response (200 OK):</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 2,
+    "email": "testuser@apilab.dev",
+    "role": "user"
+  },
+  "expires_in": 86400
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Todo Endpoints -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-blue-700">📝 Todos</h3>
+                        
+                        <!-- GET All Todos -->
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded mr-2">GET</span>
+                                <span class="font-mono text-sm">/todos</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Auth Required</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Get all todos for authenticated user</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="text-xs font-semibold mb-1">Response (200 OK):</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "data": [
+    {
+      "id": 1,
+      "title": "Buy groceries",
+      "description": "Milk, eggs, bread",
+      "completed": false,
+      "user_id": 2,
+      "owner_email": "testuser@apilab.dev",
+      "created_at": "2024-01-15T10:30:00",
+      "updated_at": "2024-01-15T10:30:00"
+    }
+  ],
+  "count": 1
+}</pre>
+                            </div>
+                        </div>
+                        
+                        <!-- GET Single Todo -->
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded mr-2">GET</span>
+                                <span class="font-mono text-sm">/todos/:id</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Auth Required</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Get a specific todo by ID</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p class="text-xs font-semibold mb-1">Example:</p>
+                                <code class="text-xs">GET /todos/5</code>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="text-xs font-semibold mb-1">Response (200 OK):</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "data": {
+    "id": 5,
+    "title": "Buy groceries",
+    "completed": false
+  }
+}</pre>
+                            </div>
+                        </div>
+                        
+                        <!-- POST Create Todo -->
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded mr-2">POST</span>
+                                <span class="font-mono text-sm">/todos</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Auth Required</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Create a new todo</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p class="text-xs font-semibold mb-1">Request Body:</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "title": "Buy milk",
+  "description": "2% milk from store",
+  "completed": false
+}</pre>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="text-xs font-semibold mb-1">Response (201 Created):</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "data": {
+    "id": 42,
+    "title": "Buy milk",
+    "description": "2% milk from store",
+    "completed": false,
+    "user_id": 2,
+    "created_at": "2024-01-15T10:30:00"
+  }
+}</pre>
+                            </div>
+                        </div>
+                        
+                        <!-- PUT Update Todo -->
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded mr-2">PUT</span>
+                                <span class="font-mono text-sm">/todos/:id</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Auth Required</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Update an existing todo</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p class="text-xs font-semibold mb-1">Example:</p>
+                                <code class="text-xs">PUT /todos/42</code>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p class="text-xs font-semibold mb-1">Request Body:</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "completed": true
+}</pre>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="text-xs font-semibold mb-1">Response (200 OK):</p>
+                                <pre class="bg-gray-50 text-gray-800 border border-gray-200 p-2 rounded text-xs overflow-x-auto">{
+  "data": {
+    "id": 42,
+    "title": "Buy milk",
+    "completed": true,
+    "updated_at": "2024-01-15T11:00:00"
+  }
+}</pre>
+                            </div>
+                        </div>
+                        
+                        <!-- DELETE Todo -->
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded mr-2">DELETE</span>
+                                <span class="font-mono text-sm">/todos/:id</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Auth Required</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Delete a todo permanently</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p class="text-xs font-semibold mb-1">Example:</p>
+                                <code class="text-xs">DELETE /todos/42</code>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="text-xs font-semibold mb-1">Response:</p>
+                                <p class="text-xs text-gray-600">204 No Content (empty response body)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Endpoints -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-blue-700">👨‍💼 Admin Endpoints</h3>
+                        
+                        <div class="bg-yellow-50 p-3 rounded-lg mb-4 border-l-4 border-yellow-400">
+                            <p class="text-sm text-yellow-800">
+                                <strong>Note:</strong> These endpoints work for any authenticated user in learning mode. 
+                                In production, only admins would have access.
+                            </p>
+                        </div>
+                        
+                        <!-- Database Tables -->
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded mr-2">GET</span>
+                                <span class="font-mono text-sm">/admin/db/tables/:table_name</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Auth Required</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">View all data in a database table</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p class="text-xs font-semibold mb-1">Available Tables:</p>
+                                <div class="text-xs space-y-1">
+                                    <div>• <code class="bg-gray-200 px-1 rounded">todos</code> - All todo items</div>
+                                    <div>• <code class="bg-gray-200 px-1 rounded">users</code> - All users</div>
+                                    <div>• <code class="bg-gray-200 px-1 rounded">request_logs</code> - API request history</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Reset Database -->
+                        <div class="border rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded mr-2">POST</span>
+                                <span class="font-mono text-sm">/admin/reset</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Auth Required</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Reset database to default state (2 users, 6 sample todos)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Database -->
+            <div x-show="activeTab === 'database'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">📊 Live Database</h2>
+                        <button @click="loadDatabaseTables()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            🔄 Refresh
+                        </button>
+                    </div>
+
+                    <!-- Login Notice -->
+                    <div x-show="!token" class="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400">
+                        <p class="text-sm text-blue-800">
+                            <strong>🔐 Login Required:</strong> Please login with Token Auth to view database tables.
+                        </p>
+                    </div>
+
+                    <!-- Table Selector -->
+                    <div class="mb-4 flex space-x-2">
+                        <button @click="dbTable = 'todos'; loadDatabaseTables()" 
+                                :class="dbTable === 'todos' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                class="px-4 py-2 rounded-lg">
+                            Todos (<span x-text="dbData.todos?.length || 0"></span>)
+                        </button>
+                        <button @click="dbTable = 'users'; loadDatabaseTables()" 
+                                :class="dbTable === 'users' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                class="px-4 py-2 rounded-lg">
+                            Users (<span x-text="dbData.users?.length || 0"></span>)
+                        </button>
+                        <button @click="dbTable = 'request_logs'; loadDatabaseTables()" 
+                                :class="dbTable === 'request_logs' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+                                class="px-4 py-2 rounded-lg">
+                            Logs (<span x-text="dbData.request_logs?.length || 0"></span>)
+                        </button>
+                    </div>
+
+                    <!-- Empty State / No Data Message -->
+                    <div x-show="!token || (dbData[dbTable]?.length === 0)" class="text-center py-12">
+                        <div class="text-gray-400 text-6xl mb-4">📊</div>
+                        <div x-show="!token">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Login Required</h3>
+                            <p class="text-gray-600 mb-4">Please login with Token Auth to view database tables</p>
+                            <button @click="activeTab = 'playground'" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                Go to Playground to Login
+                            </button>
+                        </div>
+                        <div x-show="token && dbData[dbTable]?.length === 0">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Data Found</h3>
+                            <p class="text-gray-600">The <span x-text="dbTable"></span> table is empty</p>
+                        </div>
+                    </div>
+
+                    <!-- Table Display -->
+                    <div class="overflow-x-auto" x-show="token && dbData[dbTable]?.length > 0">
+                        <!-- Todos Table -->
+                        <table x-show="dbTable === 'todos'" class="w-full border-collapse border">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border p-2 text-left">ID</th>
+                                    <th class="border p-2 text-left">Title</th>
+                                    <th class="border p-2 text-left">Done?</th>
+                                    <th class="border p-2 text-left">Owner</th>
+                                    <th class="border p-2 text-left">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="todo in dbData.todos" :key="todo.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border p-2" x-text="todo.id"></td>
+                                        <td class="border p-2" x-text="todo.title"></td>
+                                        <td class="border p-2">
+                                            <span x-text="todo.completed ? '✅' : '⬜'"></span>
+                                        </td>
+                                        <td class="border p-2 text-xs" x-text="todo.owner_email"></td>
+                                        <td class="border p-2 text-xs" x-text="formatDate(todo.created_at)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <!-- Users Table -->
+                        <table x-show="dbTable === 'users'" class="w-full border-collapse border">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border p-2 text-left">ID</th>
+                                    <th class="border p-2 text-left">Email</th>
+                                    <th class="border p-2 text-left">Role</th>
+                                    <th class="border p-2 text-left">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="user in dbData.users" :key="user.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border p-2" x-text="user.id"></td>
+                                        <td class="border p-2" x-text="user.email"></td>
+                                        <td class="border p-2">
+                                            <span :class="user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'"
+                                                  class="px-2 py-1 rounded text-xs font-medium"
+                                                  x-text="user.role"></span>
+                                        </td>
+                                        <td class="border p-2 text-xs" x-text="formatDate(user.created_at)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <!-- Request Logs Table -->
+                        <table x-show="dbTable === 'request_logs'" class="w-full border-collapse border text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border p-2 text-left">Method</th>
+                                    <th class="border p-2 text-left">Path</th>
+                                    <th class="border p-2 text-left">Status</th>
+                                    <th class="border p-2 text-left">Time</th>
+                                    <th class="border p-2 text-left">Auth</th>
+                                    <th class="border p-2 text-left">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="log in dbData.request_logs" :key="log.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border p-2 font-mono" x-text="log.method"></td>
+                                        <td class="border p-2 text-xs" x-text="log.path"></td>
+                                        <td class="border p-2" :class="getStatusClass(log.status_code)" x-text="log.status_code"></td>
+                                        <td class="border p-2" x-text="`${log.latency_ms}ms`"></td>
+                                        <td class="border p-2 text-xs" x-text="log.auth_method"></td>
+                                        <td class="border p-2 text-xs" x-text="formatDate(log.timestamp)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 text-sm">
+                        <p class="text-blue-800">
+                            💡 This table updates in real-time when you make API requests. Try creating a todo and watch a new row appear here!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Settings -->
+            <div x-show="activeTab === 'settings'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6">⚙️ Settings</h2>
+                    
+                    <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400">
+                        <p class="text-sm text-blue-700">
+                            <strong>💡 Platform Info:</strong> This app runs on a free-tier server. 
+                            The server sleeps after 15 minutes of inactivity. Your first request after sleep 
+                            will take ~30 seconds while the server wakes up. This is normal!
+                        </p>
+                    </div>
+
+                    <!-- Error Playground Section -->
+                    <div class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-400">
+                        <h3 class="text-lg font-bold mb-3">🔥 Error Playground</h3>
+                        <p class="text-sm text-gray-700 mb-3">
+                            Simulate API failures to learn error handling. When enabled, 
+                            some requests will randomly fail with realistic errors.
+                        </p>
+                        
+                        <div class="flex items-center mb-3">
+                            <input type="checkbox" x-model="errorPlaygroundEnabled" id="errorPlayground" class="mr-2">
+                            <label for="errorPlayground" class="text-sm font-medium">Enable Error Playground</label>
+                        </div>
+                        
+                        <div x-show="errorPlaygroundEnabled" class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">
+                                    Chaos Level: <span x-text="Math.round(chaosLevel * 100) + '%'"></span>
+                                </label>
+                                <input type="range" x-model.number="chaosLevel" min="0.05" max="0.5" step="0.05" class="w-full">
+                                <p class="text-xs text-gray-600 mt-1">Higher = more frequent errors (good for learning!)</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Simulate Latency (ms):</label>
+                                <input type="number" x-model.number="simulateLatency" min="0" max="3000" step="100" 
+                                       class="px-3 py-1 border rounded">
+                                <p class="text-xs text-gray-600 mt-1">Add artificial delay to test timeout handling</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-bold mb-4">🔄 Reset to Default</h3>
+                        <p class="text-gray-600 mb-4">
+                            Start fresh! This will restore the database to its original state with:
+                        </p>
+                        <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
+                            <li>2 default users (admin, testuser)</li>
+                            <li>6 sample todos</li>
+                            <li>Clear all request logs</li>
+                        </ul>
+                        <p class="text-blue-600 font-medium mb-4">💡 Any changes you made will be reset to defaults</p>
+                        
+                        <button @click="showResetConfirm = true" 
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            Reset to Default ↺
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div x-show="showResetConfirm" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+         x-cloak>
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">🔄 Reset to Default?</h3>
+            <p class="text-gray-700 mb-4">
+                This will restore the database to its original state. Any changes you made (new todos, users, etc.) will be reset to the default seed data.
+            </p>
+            <p class="text-sm text-blue-600 mb-4">
+                ✨ This is helpful when you want to start fresh or if something went wrong during experimentation!
+            </p>
+            <div class="flex justify-end space-x-3">
+                <button @click="showResetConfirm = false" 
+                        class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                    Cancel
+                </button>
+                <button @click="resetDatabase()" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Yes, Reset Everything
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alpine.js App Data -->
+    <script>
+        function appData() {
+            return {
+                // Tab & Lesson state
+                activeTab: 'playground',
+                activeLesson: 'intro',
+                
+                // Request state
+                method: 'GET',
+                endpoint: '/api/todos',
+                authType: 'none',
+                basicAuth: {
+                    username: 'testuser@apilab.dev',
+                    password: 'test123'
+                },
+                token: null,
+                loginEmail: 'testuser@apilab.dev',
+                loginPassword: 'test123',
+                currentUser: null,
+                requestBody: '{\n  "title": "My new todo",\n  "description": "Created from API Lab",\n  "completed": false\n}',
+                loading: false,
+                response: null,
+                lastRequest: null,
+                
+                // Database state
+                dbTable: 'todos',
+                dbData: {
+                    todos: [],
+                    users: [],
+                    request_logs: []
+                },
+                
+                // Error Playground state
+                errorPlaygroundEnabled: false,
+                chaosLevel: 0.1,
+                simulateLatency: 0,
+                
+                // UI state
+                showResetConfirm: false,
+                
+                init() {
+                    console.log('API Lab initialized');
+                    // Load token from localStorage if exists
+                    const savedToken = localStorage.getItem('apilab_token');
+                    if (savedToken) {
+                        this.token = savedToken;
+                    }
+                },
+                
+                async sendRequest() {
+                    this.loading = true;
+                    this.response = null;
+                    
+                    const startTime = performance.now();
+                    
+                    try {
+                        const headers = {
+                            'Content-Type': 'application/json'
+                        };
+                        
+                        // Add auth header
+                        if (this.authType === 'basic') {
+                            const credentials = btoa(`${this.basicAuth.username}:${this.basicAuth.password}`);
+                            headers['Authorization'] = `Basic ${credentials}`;
+                        } else if (this.authType === 'token' && this.token) {
+                            headers['Authorization'] = `Bearer ${this.token}`;
+                        }
+                        
+                        const options = {
+                            method: this.method,
+                            headers: headers
+                        };
+                        
+                        if ((this.method === 'POST' || this.method === 'PUT') && this.requestBody) {
+                            options.body = this.requestBody;
+                        }
+                        
+                        // Build endpoint URL with error playground params if enabled
+                        let endpoint = this.endpoint;
+                        if (this.errorPlaygroundEnabled) {
+                            const params = new URLSearchParams({
+                                error_playground: 'true',
+                                chaos_level: this.chaosLevel.toString(),
+                                simulate_latency: this.simulateLatency.toString()
+                            });
+                            endpoint += (endpoint.includes('?') ? '&' : '?') + params.toString();
+                        }
+                        
+                        // Store request details
+                        this.lastRequest = {
+                            method: this.method,
+                            url: window.location.origin + endpoint,
+                            headers: headers,
+                            body: options.body || null
+                        };
+                        
+                        const res = await fetch(endpoint, options);
+                        const endTime = performance.now();
+                        
+                        let data;
+                        try {
+                            data = await res.json();
+                        } catch (e) {
+                            data = null;
+                        }
+                        
+                        this.response = {
+                            status: res.status,
+                            statusText: res.statusText,
+                            time: Math.round(endTime - startTime),
+                            data: data
+                        };
+                        
+                        // Auto-refresh database if on that tab
+                        if (this.activeTab === 'database') {
+                            setTimeout(() => this.loadDatabaseTables(), 500);
+                        }
+                        
+                    } catch (error) {
+                        this.response = {
+                            status: 0,
+                            statusText: 'Network Error',
+                            time: 0,
+                            data: { error: error.message }
+                        };
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                async login() {
+                    try {
+                        const res = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: this.loginEmail,
+                                password: this.loginPassword
+                            })
+                        });
+                        
+                        if (res.ok) {
+                            const data = await res.json();
+                            this.token = data.token;
+                            this.currentUser = data.user;
+                            localStorage.setItem('apilab_token', data.token);
+                            alert('✅ Login successful!');
+                        } else {
+                            const error = await res.json();
+                            alert(`❌ Login failed: ${error.error}`);
+                        }
+                    } catch (error) {
+                        alert(`❌ Login error: ${error.message}`);
+                    }
+                },
+                
+                async loadDatabaseTables() {
+                    // Need to be logged in to view database
+                    if (!this.token) {
+                        // Don't show alert on initial tab click - the UI banner will guide them
+                        this.dbData[this.dbTable] = [];
+                        return;
+                    }
+                    
+                    try {
+                        const res = await fetch(`/api/admin/db/tables/${this.dbTable}`, {
+                            headers: {
+                                'Authorization': `Bearer ${this.token}`
+                            }
+                        });
+                        
+                        if (res.ok) {
+                            const data = await res.json();
+                            this.dbData[this.dbTable] = data.rows;
+                        } else {
+                            const error = await res.json();
+                            const errorMsg = error.error || error.msg || 'Unknown error';
+                            console.error('Database load error:', errorMsg);
+                            // Clear the data to show empty state
+                            this.dbData[this.dbTable] = [];
+                        }
+                    } catch (error) {
+                        console.error('Error loading database:', error);
+                        this.dbData[this.dbTable] = [];
+                    }
+                },
+                
+                async resetDatabase() {
+                    if (!this.token) {
+                        alert('Please login first');
+                        return;
+                    }
+                    
+                    try {
+                        const res = await fetch('/api/admin/reset', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${this.token}`
+                            }
+                        });
+                        
+                        if (res.ok) {
+                            alert('✅ Database reset successfully!');
+                            this.showResetConfirm = false;
+                            if (this.activeTab === 'database') {
+                                this.loadDatabaseTables();
+                            }
+                        } else {
+                            const error = await res.json();
+                            alert(`❌ Reset failed: ${error.error}`);
+                        }
+                    } catch (error) {
+                        alert(`❌ Error: ${error.message}`);
+                    }
+                },
+                
+                async downloadPostmanCollection() {
+                    window.location.href = '/api/postman/collection';
+                },
+                
+                formatJSON() {
+                    try {
+                        const parsed = JSON.parse(this.requestBody);
+                        this.requestBody = JSON.stringify(parsed, null, 2);
+                    } catch (e) {
+                        alert('Invalid JSON');
+                    }
+                },
+                
+                formatResponseJSON() {
+                    if (!this.response?.data) return '';
+                    
+                    const json = JSON.stringify(this.response.data, null, 2);
+                    
+                    // Simple syntax highlighting
+                    return json
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+                        .replace(/: "([^"]*)"/g, ': <span class="json-string">"$1"</span>')
+                        .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+                        .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
+                        .replace(/: null/g, ': <span class="json-null">null</span>');
+                },
+                
+                getStatusClass(status) {
+                    if (status >= 200 && status < 300) return 'status-2xx';
+                    if (status >= 300 && status < 400) return 'status-3xx';
+                    if (status >= 400 && status < 500) return 'status-4xx';
+                    if (status >= 500) return 'status-5xx';
+                    return '';
+                },
+                
+                getStatusExplanation(status) {
+                    const explanations = {
+                        400: 'Bad Request - The data you sent is invalid or malformed.',
+                        401: 'Unauthorized - You need to provide valid authentication credentials.',
+                        403: 'Forbidden - You don\'t have permission to access this resource.',
+                        404: 'Not Found - The resource you requested doesn\'t exist.',
+                        405: 'Method Not Allowed - This HTTP method is not supported for this endpoint. Check if you need an ID in the URL (e.g., /api/todos/5 for PUT/DELETE).',
+                        422: 'Unprocessable Entity - Validation failed. Check the error details.',
+                        500: 'Internal Server Error - Something went wrong on the server.',
+                        503: 'Service Unavailable - The server is temporarily unavailable.'
+                    };
+                    return explanations[status] || 'An error occurred.';
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleString();
+                }
+            };
+        }
+    </script>
+
+</body>
+</html>
