@@ -63,7 +63,7 @@ All required environment variables are configured in `render.yaml`:
 | Timeout | 120 seconds | ✅ Handles long requests |
 | Port binding | `0.0.0.0:$PORT` | ✅ Accepts external traffic |
 | Build command | `pip install -r requirements.txt` | ✅ Installs all deps |
-| Start command | `gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1` | ✅ Correct |
+| Start command | `gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1` | ✅ Correct |
 
 ### 6. ✅ Beginner-Friendly Documentation
 

@@ -480,7 +480,7 @@ apilab/
 ├── Procfile                     # Heroku-style process file
 ├── runtime.txt                  # Python version
 ├── railway.json                 # Railway deployment config
-├── app.py                       # Entry point
+├── wsgi.py                      # WSGI entry point for gunicorn
 ├── seed.py                      # Database seeder
 ├── start.sh                     # Local setup script (Unix/Mac)
 ├── start.bat                    # Local setup script (Windows)

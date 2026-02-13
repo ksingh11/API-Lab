@@ -41,7 +41,7 @@ Render will auto-detect most settings from `render.yaml`, but verify:
 | **Branch** | `main` or `master` | Your default branch |
 | **Runtime** | Python 3 | Auto-detected |
 | **Build Command** | `pip install -r requirements.txt` | Auto-filled from render.yaml |
-| **Start Command** | `gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1` | Auto-filled from render.yaml |
+| **Start Command** | `gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1` | Auto-filled from render.yaml |
 | **Plan** | **Free** | Select free tier |
 
 ### Step 4: Environment Variables (Auto-Configured!)
@@ -109,7 +109,7 @@ Region: Oregon (US West)
 Branch: main
 Runtime: Python 3
 Build Command: pip install -r requirements.txt
-Start Command: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1
+Start Command: gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1
 ```
 
 ### Step 2: Add Environment Variables
