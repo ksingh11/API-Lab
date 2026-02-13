@@ -1818,7 +1818,7 @@ curl -X DELETE http://localhost:5001/api/todos/1 \
                             headers: headers
                         };
                         
-                        if ((this.method === 'POST' || this.method === 'PUT') && this.requestBody) {
+                        if ((this.method === 'POST' || this.method === 'PUT' || this.method === 'PATCH') && this.requestBody) {
                             options.body = this.requestBody;
                         }
                         
