@@ -178,62 +178,298 @@
             <!-- Tab Content: Learn -->
             <div x-show="activeTab === 'learn'" x-cloak>
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-2xl font-bold mb-6">📚 API Learning Guide</h2>
+                    <h2 class="text-2xl font-bold mb-6">📚 Your Learning Journey</h2>
                     
-                    <!-- Learning Topic Selector -->
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-                    <button @click="activeLesson = 'intro'" 
-                            :class="activeLesson === 'intro' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        🎯 Introduction to APIs
+                    <!-- Progress Dashboard -->
+                    <div class="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-blue-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-blue-800">Your Progress</h3>
+                                <p class="text-sm text-gray-600">Complete all 9 levels to become an API Master!</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-3xl font-bold text-blue-600" x-text="progressPercentage + '%'"></div>
+                                <div class="text-xs text-gray-600">Complete</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full transition-all duration-500"
+                                 :style="`width: ${progressPercentage}%`"></div>
+                        </div>
+                        
+                        <div class="mt-3 flex items-center justify-between text-xs text-gray-600">
+                            <span><span x-text="progress.completedLevels.length"></span> of 9 levels completed</span>
+                            <span><span x-text="progress.achievements.length"></span> achievements unlocked 🏆</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Level Selector (9 Progressive Levels) -->
+                    <div class="grid grid-cols-1 gap-4 mb-6">
+                    
+                    <!-- Level 1: What is an API? -->
+                    <button @click="isLevelUnlocked(1) && (activeLesson = 'level1')"
+                            :disabled="!isLevelUnlocked(1)"
+                            :class="[
+                                activeLesson === 'level1' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(1) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[1].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">🎯</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 1: What is an API?</div>
+                                    <div class="text-xs text-gray-600">Foundation · 10 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[1].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[1].completed && isLevelUnlocked(1)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(1)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'client-server'" 
-                            :class="activeLesson === 'client-server' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        💻 Client vs Server
+                    
+                    <!-- Level 2: How the Web Works -->
+                    <button @click="isLevelUnlocked(2) && (activeLesson = 'level2')"
+                            :disabled="!isLevelUnlocked(2)"
+                            :class="[
+                                activeLesson === 'level2' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(2) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[2].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">💻</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 2: How the Web Works</div>
+                                    <div class="text-xs text-gray-600">Request/Response Cycle · 15 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[2].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[2].completed && isLevelUnlocked(2)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(2)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(2)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 1 first (or skip with warning)
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'http'" 
-                            :class="activeLesson === 'http' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        🔧 HTTP Methods (GET, POST, PUT, DELETE)
+                    
+                    <!-- Level 3: JSON Basics -->
+                    <button @click="isLevelUnlocked(3) && (activeLesson = 'level3')"
+                            :disabled="!isLevelUnlocked(3)"
+                            :class="[
+                                activeLesson === 'level3' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(3) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[3].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">📦</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 3: JSON Basics</div>
+                                    <div class="text-xs text-gray-600">Data Format · 12 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[3].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[3].completed && isLevelUnlocked(3)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(3)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(3)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 2 first (or skip with warning)
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'status'" 
-                            :class="activeLesson === 'status' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        📊 Status Codes Explained
+                    
+                    <!-- Level 4: HTTP Methods -->
+                    <button @click="isLevelUnlocked(4) && (activeLesson = 'level4')"
+                            :disabled="!isLevelUnlocked(4)"
+                            :class="[
+                                activeLesson === 'level4' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(4) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[4].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">🔧</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 4: HTTP Methods</div>
+                                    <div class="text-xs text-gray-600">GET, POST, PUT, DELETE · 15 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[4].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[4].completed && isLevelUnlocked(4)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(4)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(4)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 3 first (or skip with warning)
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'json'" 
-                            :class="activeLesson === 'json' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        📦 Understanding JSON
+                    
+                    <!-- Level 5: Your First API Call -->
+                    <button @click="isLevelUnlocked(5) && (activeLesson = 'level5')"
+                            :disabled="!isLevelUnlocked(5)"
+                            :class="[
+                                activeLesson === 'level5' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(5) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[5].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">🚀</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 5: Your First API Call</div>
+                                    <div class="text-xs text-gray-600">Hands-on Practice · 20 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[5].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[5].completed && isLevelUnlocked(5)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(5)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(5)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 4 first (or skip with warning)
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'auth'" 
-                            :class="activeLesson === 'auth' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        🔐 Authentication Basics
+                    
+                    <!-- Level 6: CRUD Operations (NEW!) -->
+                    <button @click="isLevelUnlocked(6) && (activeLesson = 'level6')"
+                            :disabled="!isLevelUnlocked(6)"
+                            :class="[
+                                activeLesson === 'level6' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(6) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[6].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">⭐</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 6: CRUD Operations</div>
+                                    <div class="text-xs text-gray-600">The Rosetta Stone of APIs · 25 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[6].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[6].completed && isLevelUnlocked(6)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(6)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(6)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 5 first (or skip with warning)
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'examples'" 
-                            :class="activeLesson === 'examples' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        💻 Practical Examples
+                    
+                    <!-- Level 7: Authentication -->
+                    <button @click="isLevelUnlocked(7) && (activeLesson = 'level7')"
+                            :disabled="!isLevelUnlocked(7)"
+                            :class="[
+                                activeLesson === 'level7' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(7) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[7].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">🔐</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 7: Authentication</div>
+                                    <div class="text-xs text-gray-600">Tokens & Security · 20 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[7].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[7].completed && isLevelUnlocked(7)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(7)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(7)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 6 first (or skip with warning)
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'apidocs'" 
-                            :class="activeLesson === 'apidocs' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        📄 API Documentation
+                    
+                    <!-- Level 8: Status Codes & Debugging -->
+                    <button @click="isLevelUnlocked(8) && (activeLesson = 'level8')"
+                            :disabled="!isLevelUnlocked(8)"
+                            :class="[
+                                activeLesson === 'level8' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(8) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[8].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">📊</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 8: Status Codes & Debugging</div>
+                                    <div class="text-xs text-gray-600">Error Handling · 18 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[8].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[8].completed && isLevelUnlocked(8)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(8)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(8)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 7 first (or skip with warning)
+                        </div>
                     </button>
-                    <button @click="activeLesson = 'swagger'" 
-                            :class="activeLesson === 'swagger' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'"
-                            class="w-full text-left px-3 py-2 rounded-lg transition text-sm font-medium">
-                        🔄 What is Swagger?
+                    
+                    <!-- Level 9: Mini Project (Graduation) -->
+                    <button @click="isLevelUnlocked(9) && (activeLesson = 'level9')"
+                            :disabled="!isLevelUnlocked(9)"
+                            :class="[
+                                activeLesson === 'level9' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
+                                isLevelUnlocked(9) ? 'hover:border-blue-400 cursor-pointer' : 'opacity-50 cursor-not-allowed',
+                                progress.levelData[9].completed ? 'bg-green-50' : ''
+                            ]"
+                            class="w-full text-left p-4 rounded-lg border-2 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">🏆</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Level 9: Mini Project</div>
+                                    <div class="text-xs text-gray-600">Capstone Challenge · 30 min</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span x-show="progress.levelData[9].completed" class="text-green-600 text-xl">✅</span>
+                                <span x-show="!progress.levelData[9].completed && isLevelUnlocked(9)" class="text-blue-600 text-xl">▶</span>
+                                <span x-show="!isLevelUnlocked(9)" class="text-gray-400 text-xl">🔒</span>
+                            </div>
+                        </div>
+                        <div x-show="!isLevelUnlocked(9)" class="mt-2 text-xs text-orange-600">
+                            ⚠️ Complete Level 8 first (or skip with warning)
+                        </div>
                     </button>
                 </div>
 
                 <!-- Learning Content Display -->
                 <div class="mt-6 p-4 bg-gray-50 rounded-lg text-sm" x-show="activeLesson">
-                    <!-- Introduction to APIs -->
-                    <div x-show="activeLesson === 'intro'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">🎯 What is an API?</h3>
+                    <!-- Level 1: What is an API? -->
+                    <div x-show="activeLesson === 'level1'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">🎯 Level 1: What is an API?</h3>
+                            <button @click="completeLevel(1)" 
+                                    x-show="!progress.levelData[1].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
                         
                         <!-- Video Section -->
                         <div class="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300">
@@ -306,6 +542,57 @@
                                 📱 Siri reads it to you: "It's sunny and 75 degrees!"
                             </p>
                         </div>
+                        
+                        <!-- Concrete Technical Flow (Food Delivery Example) -->
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-lg border-2 border-green-400 mb-4">
+                            <p class="font-bold text-green-800 mb-3 text-base">🍔 Concrete Example: Opening a Food Delivery App</p>
+                            <p class="text-sm text-gray-700 mb-4">Let's see exactly what happens when you open DoorDash or Uber Eats:</p>
+                            
+                            <div class="bg-white p-4 rounded-lg mb-3">
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start">
+                                        <span class="font-bold text-green-700 mr-2">1.</span>
+                                        <div>
+                                            <strong class="text-gray-800">You tap the app icon 📱</strong>
+                                            <p class="text-gray-600 text-xs">Your phone sends: <code class="bg-gray-200 px-1">GET /api/restaurants?location=yourCity</code></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-bold text-green-700 mr-2">2.</span>
+                                        <div>
+                                            <strong class="text-gray-800">The API receives the request 🖥️</strong>
+                                            <p class="text-gray-600 text-xs">Server checks: What restaurants are near this user?</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-bold text-green-700 mr-2">3.</span>
+                                        <div>
+                                            <strong class="text-gray-800">Database query 📊</strong>
+                                            <p class="text-gray-600 text-xs">Server searches database for restaurants within 5 miles</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-bold text-green-700 mr-2">4.</span>
+                                        <div>
+                                            <strong class="text-gray-800">API sends response back 📦</strong>
+                                            <p class="text-gray-600 text-xs">Returns JSON with 20 restaurants (names, ratings, delivery time)</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-bold text-green-700 mr-2">5.</span>
+                                        <div>
+                                            <strong class="text-gray-800">Your phone displays it ✨</strong>
+                                            <p class="text-gray-600 text-xs">You see: "Pizza Hut 🍕 • 4.5⭐ • 25 min"</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-3 rounded text-xs">
+                                <p class="font-bold text-blue-800 mb-1">⏱️ Time: This entire flow happens in under 1 second!</p>
+                                <p class="text-gray-700">The request travels from your phone → cell tower → internet → server → database → back to you. APIs make this instant!</p>
+                            </div>
+                        </div>
 
                         <div class="bg-green-50 p-4 rounded-lg text-sm mb-4">
                             <p class="font-bold text-green-800 mb-2">💡 Why Do We Need APIs?</p>
@@ -350,9 +637,16 @@
                         </div>
                     </div>
 
-                    <!-- Client vs Server & Request/Response (Combined Holistic Lesson) -->
-                    <div x-show="activeLesson === 'client-server'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">💻 How Apps Talk to Each Other</h3>
+                    <!-- Level 2: How the Web Works (Request/Response Cycle) -->
+                    <div x-show="activeLesson === 'level2'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">💻 Level 2: How the Web Works</h3>
+                            <button @click="completeLevel(2)" 
+                                    x-show="!progress.levelData[2].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
                         
                         <p class="text-gray-700 mb-4 text-base leading-relaxed">
                             Every time you use an app, there's a <strong>conversation</strong> happening between your device 
@@ -608,9 +902,16 @@
                     </div>
 
 
-                    <!-- HTTP Methods -->
-                    <div x-show="activeLesson === 'http'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔧 Different Types of Requests</h3>
+                    <!-- Level 4: HTTP Methods -->
+                    <div x-show="activeLesson === 'level4'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">🔧 Level 4: HTTP Methods</h3>
+                            <button @click="completeLevel(4)" 
+                                    x-show="!progress.levelData[4].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
                         
                         <p class="text-gray-700 mb-3 leading-relaxed text-base">
                             When you send a note through the magic mailbox (API), you need to tell it what you want to do. 
@@ -623,6 +924,66 @@
                                 <strong>HTTP Method:</strong> A special command that tells the computer what action you want to do - 
                                 like "show me", "create new", "update", or "delete". It's like verbs in a sentence!
                             </p>
+                        </div>
+                        
+                        <!-- INTENT TABLE (Mental Model) -->
+                        <div class="bg-white p-5 rounded-lg border-2 border-purple-400 mb-6">
+                            <p class="font-bold text-purple-800 mb-3 text-base">🎯 Method Intent Cheat Sheet</p>
+                            <p class="text-sm text-gray-700 mb-4">Memorize this table - it's the key to understanding ALL APIs:</p>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm border-collapse">
+                                    <thead class="bg-purple-100">
+                                        <tr>
+                                            <th class="text-left p-3 border border-purple-300 font-bold">Method</th>
+                                            <th class="text-left p-3 border border-purple-300 font-bold">Think of it like...</th>
+                                            <th class="text-left p-3 border border-purple-300 font-bold">Todo Example</th>
+                                            <th class="text-left p-3 border border-purple-300 font-bold">Instagram Example</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-blue-50">
+                                            <td class="p-3 border border-purple-200"><code class="bg-blue-200 px-2 py-1 rounded font-bold">GET</code></td>
+                                            <td class="p-3 border border-purple-200">📖 Read only (like looking at a book)</td>
+                                            <td class="p-3 border border-purple-200">View your todo list</td>
+                                            <td class="p-3 border border-purple-200">Scroll your feed</td>
+                                        </tr>
+                                        <tr class="bg-green-50">
+                                            <td class="p-3 border border-purple-200"><code class="bg-green-200 px-2 py-1 rounded font-bold">POST</code></td>
+                                            <td class="p-3 border border-purple-200">➕ Create new (like adding to cart)</td>
+                                            <td class="p-3 border border-purple-200">Add new todo task</td>
+                                            <td class="p-3 border border-purple-200">Post a new photo</td>
+                                        </tr>
+                                        <tr class="bg-yellow-50">
+                                            <td class="p-3 border border-purple-200"><code class="bg-yellow-200 px-2 py-1 rounded font-bold">PUT/PATCH</code></td>
+                                            <td class="p-3 border border-purple-200">✏️ Edit existing (like fixing a typo)</td>
+                                            <td class="p-3 border border-purple-200">Mark task complete</td>
+                                            <td class="p-3 border border-purple-200">Edit your caption</td>
+                                        </tr>
+                                        <tr class="bg-red-50">
+                                            <td class="p-3 border border-purple-200"><code class="bg-red-200 px-2 py-1 rounded font-bold">DELETE</code></td>
+                                            <td class="p-3 border border-purple-200">🗑️ Remove forever (like shredding paper)</td>
+                                            <td class="p-3 border border-purple-200">Delete the task</td>
+                                            <td class="p-3 border border-purple-200">Delete your post</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- GOLDEN RULE -->
+                        <div class="bg-gradient-to-r from-yellow-100 to-orange-100 p-5 rounded-lg border-2 border-yellow-500 mb-6">
+                            <p class="text-2xl mb-2">⚡</p>
+                            <p class="font-bold text-orange-800 mb-2 text-lg">The Golden Rule of GET</p>
+                            <p class="text-gray-800 text-sm font-bold mb-2">"GET should NEVER change anything"</p>
+                            <p class="text-gray-700 text-sm leading-relaxed">
+                                If you refresh a page and something changes (like a new todo appears, or a number increases), 
+                                that's a bug! GET is for reading only - it should be completely safe to call 1000 times in a row.
+                            </p>
+                            <div class="bg-white p-3 rounded mt-3 text-xs">
+                                <p class="font-bold text-green-800 mb-1">✅ Good: GET /api/todos (just viewing)</p>
+                                <p class="font-bold text-red-800">❌ Bad: GET /api/todos/increment-view-count (changing data!)</p>
+                            </div>
                         </div>
                         
                         <!-- GET -->
@@ -778,9 +1139,16 @@
                         </div>
                     </div>
                     
-                    <!-- Status Codes -->
-                    <div x-show="activeLesson === 'status'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">📊 Did It Work? (Status Codes)</h3>
+                    <!-- Level 8: Status Codes & Debugging -->
+                    <div x-show="activeLesson === 'level8'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">📊 Level 8: Status Codes & Debugging</h3>
+                            <button @click="completeLevel(8)" 
+                                    x-show="!progress.levelData[8].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
                         
                         <p class="text-gray-700 mb-3 text-base leading-relaxed">
                             After you send a request through the magic mailbox, you get a <strong>number</strong> that tells you what happened. 
@@ -793,6 +1161,49 @@
                                 <strong>Status Code:</strong> A 3-digit number (like 200, 404, or 500) that the computer sends back 
                                 to tell you if your request worked or what went wrong. It's like a report card for your request!
                             </p>
+                        </div>
+                        
+                        <!-- DEBUGGING HEURISTIC (Critical!) -->
+                        <div class="bg-gradient-to-r from-red-100 to-pink-100 p-5 rounded-lg border-2 border-red-500 mb-6">
+                            <p class="text-3xl mb-2">🔧</p>
+                            <p class="font-bold text-red-800 mb-3 text-lg">The Debugging Decision Tree</p>
+                            <p class="text-sm text-gray-700 mb-4">When something goes wrong, use this flowchart to fix it:</p>
+                            
+                            <div class="bg-white p-4 rounded-lg space-y-3 text-sm">
+                                <div class="flex items-start border-l-4 border-green-500 pl-3">
+                                    <span class="mr-2">✅</span>
+                                    <div>
+                                        <p class="font-bold text-green-800">If 2xx → Success!</p>
+                                        <p class="text-gray-600 text-xs">Everything worked. Celebrate! 🎉</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start border-l-4 border-blue-500 pl-3">
+                                    <span class="mr-2">🔄</span>
+                                    <div>
+                                        <p class="font-bold text-blue-800">If 3xx → Follow the redirect</p>
+                                        <p class="text-gray-600 text-xs">Resource moved. Check the new location in response headers.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start border-l-4 border-orange-500 pl-3">
+                                    <span class="mr-2">⚠️</span>
+                                    <div>
+                                        <p class="font-bold text-orange-800">If 4xx → Fix YOUR request</p>
+                                        <p class="text-gray-600 text-xs">YOU made a mistake. Check your: endpoint, method, body, auth token.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start border-l-4 border-red-500 pl-3">
+                                    <span class="mr-2">❌</span>
+                                    <div>
+                                        <p class="font-bold text-red-800">If 5xx → Server bug (not your fault!)</p>
+                                        <p class="text-gray-600 text-xs">Wait a bit and try again. If it persists, contact support.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-yellow-50 p-3 rounded mt-3 text-xs">
+                                <p class="font-bold text-yellow-800 mb-1">💡 Pro Tip:</p>
+                                <p class="text-gray-700">4xx = Your problem. 5xx = Their problem. This distinction saves HOURS of debugging!</p>
+                            </div>
                         </div>
                         
                         <div class="space-y-4">
@@ -926,9 +1337,16 @@
                         </div>
                     </div>
                     
-                    <!-- JSON -->
-                    <div x-show="activeLesson === 'json'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">📦 How Do We Write the Messages? (JSON)</h3>
+                    <!-- Level 3: JSON Basics -->
+                    <div x-show="activeLesson === 'level3'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">📦 Level 3: JSON Basics</h3>
+                            <button @click="completeLevel(3)" 
+                                    x-show="!progress.levelData[3].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
                         
                         <p class="text-gray-700 mb-3 text-base leading-relaxed">
                             When you send a note through the magic mailbox, you need to write it in a special way 
@@ -941,6 +1359,47 @@
                                 <strong>JSON:</strong> A special way of organizing information so computers can understand it. 
                                 Think of it like a recipe card with labeled ingredients - everything has a name and a value!
                             </p>
+                        </div>
+                        
+                        <!-- Simple Metaphor: Excel in Text Form -->
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-lg border-2 border-purple-400 mb-6">
+                            <p class="font-bold text-purple-800 mb-3 text-base">💡 Simple Metaphor: JSON = Excel Columns in Text Form</p>
+                            <p class="text-sm text-gray-700 mb-4">JSON is just a dictionary (key → value pairs). Like Excel columns turned into text!</p>
+                            
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded-lg border border-purple-200">
+                                    <p class="font-bold text-sm text-purple-800 mb-2">📊 Excel/Google Sheets:</p>
+                                    <table class="w-full text-xs border-collapse">
+                                        <thead class="bg-purple-100">
+                                            <tr>
+                                                <th class="border border-purple-300 p-2">id</th>
+                                                <th class="border border-purple-300 p-2">title</th>
+                                                <th class="border border-purple-300 p-2">completed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="border border-purple-200 p-2">1</td>
+                                                <td class="border border-purple-200 p-2">Buy milk</td>
+                                                <td class="border border-purple-200 p-2">false</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="font-bold text-sm text-green-400 mb-2">📝 Same data as JSON:</p>
+                                    <pre class="text-xs text-green-400">{
+  "id": 1,
+  "title": "Buy milk",
+  "completed": false
+}</pre>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 bg-yellow-50 p-3 rounded text-xs">
+                                <p class="text-gray-700"><strong>See?</strong> It's the exact same information! Just written differently. Column names become keys (in quotes), cell values become values.</p>
+                            </div>
                         </div>
                         
                         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border-2 border-blue-400 mb-4">
@@ -1040,9 +1499,16 @@
                         </div>
                     </div>
                     
-                    <!-- Authentication -->
-                    <div x-show="activeLesson === 'auth'">
-                        <h3 class="font-bold text-lg mb-3 text-blue-700">🔐 How Do We Know It's YOU? (Authentication)</h3>
+                    <!-- Level 7: Authentication -->
+                    <div x-show="activeLesson === 'level7'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">🔐 Level 7: Authentication</h3>
+                            <button @click="completeLevel(7)" 
+                                    x-show="!progress.levelData[7].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
                         
                         <p class="text-gray-700 mb-4 text-base leading-relaxed">
                             <strong>Authentication</strong> means proving who you are, like showing your ID card at school 
@@ -1172,7 +1638,539 @@
                         </div>
                     </div>
                     
-                    <!-- Practical Examples -->
+                    <!-- Level 5: Your First API Call -->
+                    <div x-show="activeLesson === 'level5'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">🚀 Level 5: Your First API Call</h3>
+                            <button @click="completeLevel(5)" 
+                                    x-show="!progress.levelData[5].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-lg border-2 border-blue-400 mb-6">
+                            <p class="text-2xl mb-3">🎯</p>
+                            <p class="font-bold text-blue-800 mb-2 text-lg">Time to Practice!</p>
+                            <p class="text-gray-700 text-sm leading-relaxed">
+                                You've learned the theory. Now let's make your first real API call! 
+                                We'll guide you step-by-step through fetching data from our Todo API.
+                            </p>
+                        </div>
+                        
+                        <!-- Exercise 5.1: Fetch All Todos -->
+                        <div class="bg-white border-2 border-green-400 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">📝</span>
+                                <h4 class="font-bold text-gray-800">Exercise 5.1: Fetch All Todos</h4>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-3 rounded mb-3 text-sm">
+                                <p class="font-bold text-blue-800 mb-2">🎯 Goal: Make a GET request to retrieve all todos</p>
+                                <p class="text-gray-700">This is the most basic API call - just reading data without changing anything.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="font-bold text-gray-800 text-sm mb-2">📋 Step-by-Step Instructions:</p>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                                    <li>Click the "Playground" tab at the top</li>
+                                    <li>Method should be "GET" (already selected)</li>
+                                    <li>Endpoint should be "/api/todos" (already filled)</li>
+                                    <li>Click "Send Request" button</li>
+                                    <li>Observe the response!</li>
+                                </ol>
+                            </div>
+                            
+                            <button @click="activeTab = 'playground'; playgroundMode = 'guided'; currentExercise = 'exercise_5_1'"
+                                    class="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-600 transition">
+                                🚀 Go to Playground & Try It Now!
+                            </button>
+                            
+                            <div class="mt-3 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
+                                <p class="font-bold text-yellow-800 text-sm mb-2">❓ Questions to Answer:</p>
+                                <div class="space-y-2 text-sm">
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(5, 'ex5_1_q1')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">How many todos were returned?</span>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(5, 'ex5_1_q2')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">What fields does each todo have? (id, title, etc.)</span>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(5, 'ex5_1_q3')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">What was the status code? (200 = success!)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 bg-green-50 p-3 rounded text-sm">
+                                <p class="font-bold text-green-800 mb-1">💡 Concept: GET = Read Only</p>
+                                <p class="text-gray-700">GET requests should never change data. You can refresh as many times as you want - the data stays the same!</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Exercise 5.2: Fetch Single Todo -->
+                        <div class="bg-white border-2 border-green-400 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">🎯</span>
+                                <h4 class="font-bold text-gray-800">Exercise 5.2: Fetch Single Todo</h4>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-3 rounded mb-3 text-sm">
+                                <p class="font-bold text-blue-800 mb-2">🎯 Goal: Get ONE specific todo by ID</p>
+                                <p class="text-gray-700">Instead of getting all todos, we'll fetch just one using its ID number.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="font-bold text-gray-800 text-sm mb-2">📋 Instructions:</p>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                                    <li>In Playground, keep GET method</li>
+                                    <li>Change endpoint to: <code class="bg-gray-200 px-1 rounded">/api/todos/1</code></li>
+                                    <li>Click "Send Request"</li>
+                                    <li>Compare this response to Exercise 5.1</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="mt-3 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
+                                <p class="font-bold text-yellow-800 text-sm mb-2">❓ Questions:</p>
+                                <div class="space-y-2 text-sm">
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(5, 'ex5_2_q1')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">Did you get an array or a single object?</span>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(5, 'ex5_2_q2')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">What happens if you try /api/todos/999? (doesn't exist)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-400">
+                            <p class="text-xl mb-2">🎉</p>
+                            <p class="font-bold text-green-800 mb-2">Congratulations!</p>
+                            <p class="text-sm text-gray-700">You've made your first API calls! You now understand how apps fetch data. Ready to create and modify data? Move on to Level 6!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Level 6: CRUD Operations (THE ROSETTA STONE) -->
+                    <div x-show="activeLesson === 'level6'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">⭐ Level 6: CRUD Operations</h3>
+                            <button @click="completeLevel(6)" 
+                                    x-show="!progress.levelData[6].completed"
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border-2 border-purple-400 mb-6">
+                            <p class="text-3xl mb-3">🗝️</p>
+                            <p class="font-bold text-purple-800 mb-2 text-xl">The Rosetta Stone of APIs</p>
+                            <p class="text-gray-700 text-base leading-relaxed">
+                                <strong>CRUD</strong> is the secret code that unlocks understanding of ALL APIs. 
+                                Once you get this, you get how Instagram, Twitter, Gmail, Spotify - everything works!
+                            </p>
+                        </div>
+                        
+                        <!-- What is CRUD? -->
+                        <div class="bg-blue-50 p-5 rounded-lg border-2 border-blue-300 mb-6">
+                            <h4 class="font-bold text-blue-800 mb-3 text-lg">📚 What is CRUD?</h4>
+                            <p class="text-gray-700 mb-4 leading-relaxed">
+                                CRUD stands for <strong>Create, Read, Update, Delete</strong> - the four basic things 
+                                you can do with data. Every app you use is just doing CRUD operations!
+                            </p>
+                            
+                            <div class="bg-white p-4 rounded-lg">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="text-left p-2 border-b font-bold">Operation</th>
+                                            <th class="text-left p-2 border-b font-bold">HTTP Method</th>
+                                            <th class="text-left p-2 border-b font-bold">What It Does</th>
+                                            <th class="text-left p-2 border-b font-bold">Todo App Example</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b">
+                                            <td class="p-2"><strong class="text-green-700">CREATE</strong></td>
+                                            <td class="p-2"><code class="bg-green-100 px-2 py-1 rounded">POST</code></td>
+                                            <td class="p-2">Make something new</td>
+                                            <td class="p-2">Add new task</td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="p-2"><strong class="text-blue-700">READ</strong></td>
+                                            <td class="p-2"><code class="bg-blue-100 px-2 py-1 rounded">GET</code></td>
+                                            <td class="p-2">View/fetch data</td>
+                                            <td class="p-2">See your tasks</td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="p-2"><strong class="text-yellow-700">UPDATE</strong></td>
+                                            <td class="p-2"><code class="bg-yellow-100 px-2 py-1 rounded">PUT/PATCH</code></td>
+                                            <td class="p-2">Change existing data</td>
+                                            <td class="p-2">Mark task complete</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2"><strong class="text-red-700">DELETE</strong></td>
+                                            <td class="p-2"><code class="bg-red-100 px-2 py-1 rounded">DELETE</code></td>
+                                            <td class="p-2">Remove permanently</td>
+                                            <td class="p-2">Delete task</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Real-World CRUD Examples -->
+                        <div class="bg-gradient-to-r from-cyan-50 to-teal-50 p-5 rounded-lg border-2 border-cyan-300 mb-6">
+                            <h4 class="font-bold text-cyan-800 mb-3">🌍 CRUD in Real Apps</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-pink-700 mb-2">📸 Instagram</p>
+                                    <ul class="text-xs space-y-1 text-gray-700">
+                                        <li><strong>CREATE:</strong> Post new photo (POST)</li>
+                                        <li><strong>READ:</strong> View feed (GET)</li>
+                                        <li><strong>UPDATE:</strong> Edit caption (PATCH)</li>
+                                        <li><strong>DELETE:</strong> Delete post (DELETE)</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-blue-700 mb-2">✉️ Gmail</p>
+                                    <ul class="text-xs space-y-1 text-gray-700">
+                                        <li><strong>CREATE:</strong> Send email (POST)</li>
+                                        <li><strong>READ:</strong> Read inbox (GET)</li>
+                                        <li><strong>UPDATE:</strong> Mark as read (PATCH)</li>
+                                        <li><strong>DELETE:</strong> Trash email (DELETE)</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-green-700 mb-2">🎵 Spotify</p>
+                                    <ul class="text-xs space-y-1 text-gray-700">
+                                        <li><strong>CREATE:</strong> New playlist (POST)</li>
+                                        <li><strong>READ:</strong> View playlists (GET)</li>
+                                        <li><strong>UPDATE:</strong> Rename playlist (PATCH)</li>
+                                        <li><strong>DELETE:</strong> Delete playlist (DELETE)</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-cyan-200">
+                                    <p class="font-bold text-red-700 mb-2">🎬 YouTube</p>
+                                    <ul class="text-xs space-y-1 text-gray-700">
+                                        <li><strong>CREATE:</strong> Upload video (POST)</li>
+                                        <li><strong>READ:</strong> Watch videos (GET)</li>
+                                        <li><strong>UPDATE:</strong> Edit title (PATCH)</li>
+                                        <li><strong>DELETE:</strong> Delete video (DELETE)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-700 mt-3">
+                                💡 <strong>Every app is just CRUD!</strong> Once you understand this pattern, you understand how all software works.
+                            </p>
+                        </div>
+                        
+                        <!-- Exercise 6.1: CREATE (POST) -->
+                        <div class="bg-white border-2 border-green-400 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">➕</span>
+                                <h4 class="font-bold text-gray-800">Exercise 6.1: CREATE a Todo (POST)</h4>
+                            </div>
+                            
+                            <div class="bg-green-50 p-3 rounded mb-3 text-sm">
+                                <p class="font-bold text-green-800 mb-2">🎯 Goal: Create a brand new todo item</p>
+                                <p class="text-gray-700">This is like posting a photo on Instagram or sending an email - creating something new!</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="font-bold text-gray-800 text-sm mb-2">📋 Instructions:</p>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                                    <li>Go to Playground tab</li>
+                                    <li>Change method to <strong>POST</strong></li>
+                                    <li>Endpoint: <code class="bg-gray-200 px-1 rounded">/api/todos</code></li>
+                                    <li>Request body (already filled for you):</li>
+                                </ol>
+                                <pre class="bg-gray-800 text-green-400 p-3 rounded mt-2 text-xs overflow-x-auto">{
+  "title": "Learn CRUD operations",
+  "description": "Master Create, Read, Update, Delete",
+  "completed": false
+}</pre>
+                                <ol start="5" class="list-decimal list-inside space-y-1 text-sm text-gray-700 mt-2">
+                                    <li>Click "Send Request"</li>
+                                    <li>Look for status code <strong>201 Created</strong>!</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="mt-3 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
+                                <p class="font-bold text-yellow-800 text-sm mb-2">❓ Critical Questions:</p>
+                                <div class="space-y-2 text-sm">
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(6, 'ex6_1_q1')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">What ID number was generated by the server?</span>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(6, 'ex6_1_q2')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">Why didn't YOU provide the ID? (Hint: server assigns it!)</span>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(6, 'ex6_1_q3')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">What's the difference between 200 OK and 201 Created?</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 bg-purple-50 p-3 rounded text-sm">
+                                <p class="font-bold text-purple-800 mb-1">💡 Concept: Server Generates IDs</p>
+                                <p class="text-gray-700">You never provide the ID when creating. The server assigns it to ensure uniqueness. This is how Instagram assigns post IDs, YouTube assigns video IDs, etc.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Exercise 6.2: UPDATE (PATCH) -->
+                        <div class="bg-white border-2 border-yellow-400 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">✏️</span>
+                                <h4 class="font-bold text-gray-800">Exercise 6.2: UPDATE a Todo (PATCH)</h4>
+                            </div>
+                            
+                            <div class="bg-yellow-50 p-3 rounded mb-3 text-sm">
+                                <p class="font-bold text-yellow-800 mb-2">🎯 Goal: Change the completed status to true</p>
+                                <p class="text-gray-700">Like marking an email as read, or editing an Instagram caption!</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="font-bold text-gray-800 text-sm mb-2">📋 Instructions:</p>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                                    <li>Method: <strong>PATCH</strong></li>
+                                    <li>Endpoint: <code class="bg-gray-200 px-1 rounded">/api/todos/1</code> (or the ID from Exercise 6.1)</li>
+                                    <li>Request body - only change what you want:</li>
+                                </ol>
+                                <pre class="bg-gray-800 text-yellow-400 p-3 rounded mt-2 text-xs">{
+  "completed": true
+}</pre>
+                                <ol start="4" class="list-decimal list-inside space-y-1 text-sm text-gray-700 mt-2">
+                                    <li>Send request</li>
+                                    <li>Notice: only "completed" changed, title stayed the same!</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="mt-3 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
+                                <p class="font-bold text-yellow-800 text-sm mb-2">❓ Questions:</p>
+                                <div class="space-y-2 text-sm">
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(6, 'ex6_2_q1')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">Did the whole object get replaced or just one field?</span>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(6, 'ex6_2_q2')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">PATCH vs PUT: Which one changes only specific fields?</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 bg-purple-50 p-3 rounded text-sm">
+                                <p class="font-bold text-purple-800 mb-1">💡 Concept: Partial vs Full Updates</p>
+                                <p class="text-gray-700"><strong>PATCH</strong> = Update only specific fields (partial). <strong>PUT</strong> = Replace entire resource (full). Most apps use PATCH for efficiency!</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Exercise 6.3: DELETE -->
+                        <div class="bg-white border-2 border-red-400 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">🗑️</span>
+                                <h4 class="font-bold text-gray-800">Exercise 6.3: DELETE a Todo</h4>
+                            </div>
+                            
+                            <div class="bg-red-50 p-3 rounded mb-3 text-sm">
+                                <p class="font-bold text-red-800 mb-2">🎯 Goal: Permanently remove a todo</p>
+                                <p class="text-gray-700">Like deleting a tweet, removing an Instagram post, or trashing an email!</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="font-bold text-gray-800 text-sm mb-2">📋 Instructions:</p>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                                    <li>Method: <strong>DELETE</strong></li>
+                                    <li>Endpoint: <code class="bg-gray-200 px-1 rounded">/api/todos/1</code></li>
+                                    <li>No request body needed!</li>
+                                    <li>Send request - should get 200 or 204 response</li>
+                                    <li>Try to GET that same todo again - you'll get 404 Not Found!</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="mt-3 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
+                                <p class="font-bold text-yellow-800 text-sm mb-2">❓ Questions:</p>
+                                <div class="space-y-2 text-sm">
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(6, 'ex6_3_q1')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">What happens when you try to GET a deleted item?</span>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="checkbox" @change="completeExercise(6, 'ex6_3_q2')" class="mt-1 mr-2">
+                                        <span class="text-gray-700">Why is DELETE irreversible? (No undo!)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 bg-purple-50 p-3 rounded text-sm">
+                                <p class="font-bold text-purple-800 mb-1">💡 Concept: State Changes</p>
+                                <p class="text-gray-700">DELETE changes the state of the database. The item is gone forever. Real apps often use "soft delete" (mark as deleted) instead of true DELETE for safety!</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Exercise 6.4: Full CRUD Cycle -->
+                        <div class="bg-gradient-to-r from-blue-100 to-purple-100 border-2 border-purple-400 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-2">🔄</span>
+                                <h4 class="font-bold text-gray-800">Exercise 6.4: Complete CRUD Lifecycle</h4>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded mb-3">
+                                <p class="font-bold text-purple-800 mb-3">🎯 Final Challenge: Do all 4 operations in sequence</p>
+                                <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                                    <li><strong>CREATE:</strong> Post 3 new todos with different titles</li>
+                                    <li><strong>READ:</strong> GET /api/todos to see all your created items</li>
+                                    <li><strong>UPDATE:</strong> PATCH one todo to mark it complete</li>
+                                    <li><strong>DELETE:</strong> Remove one todo</li>
+                                    <li><strong>READ again:</strong> Verify your changes</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="bg-green-50 p-3 rounded text-sm">
+                                <p class="font-bold text-green-800 mb-1">🎉 Achievement Unlocked!</p>
+                                <p class="text-gray-700">You now understand how EVERY app works! Instagram posts? CRUD. Gmail? CRUD. Spotify playlists? CRUD. You've mastered the foundation!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Level 9: Mini Project (Graduation) -->
+                    <div x-show="activeLesson === 'level9'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-blue-700">🏆 Level 9: Mini Project - Your Graduation!</h3>
+                            <button @click="completeLevel(9); progress.miniProjectCompleted = true; saveProgress()" 
+                                    x-show="!progress.levelData[9].completed"
+                                    class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs rounded-lg hover:from-green-700 hover:to-emerald-700 font-bold">
+                                🎓 Complete & Graduate!
+                            </button>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-lg border-2 border-yellow-400 mb-6">
+                            <p class="text-4xl mb-3">🎯</p>
+                            <p class="font-bold text-orange-800 mb-2 text-xl">Build Your Own Task Manager</p>
+                            <p class="text-gray-700 text-base leading-relaxed">
+                                This is it! The final challenge. You'll build a complete task management system from scratch 
+                                using everything you've learned. This proves you've gone from Zero to Hero!
+                            </p>
+                        </div>
+                        
+                        <!-- Project Requirements -->
+                        <div class="bg-white border-2 border-blue-400 rounded-lg p-5 mb-6">
+                            <h4 class="font-bold text-blue-800 mb-4 text-lg">📋 Project Requirements</h4>
+                            <p class="text-gray-700 mb-4 text-sm">Complete all 5 steps to graduate:</p>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-2xl mr-2">1️⃣</span>
+                                        <p class="font-bold text-gray-800">Fetch All Tasks</p>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-2">Use <code class="bg-gray-200 px-1 rounded">GET /api/todos</code> to retrieve all existing tasks.</p>
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" @change="completeExercise(9, 'project_step1')" class="mr-2">
+                                        <span>✓ Step 1 completed</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-2xl mr-2">2️⃣</span>
+                                        <p class="font-bold text-gray-800">Create 3 New Tasks</p>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-2">Use <code class="bg-gray-200 px-1 rounded">POST /api/todos</code> three times with different task names:</p>
+                                    <ul class="text-xs text-gray-600 mb-2 list-disc list-inside">
+                                        <li>"Buy groceries"</li>
+                                        <li>"Call dentist"</li>
+                                        <li>"Finish API course"</li>
+                                    </ul>
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" @change="completeExercise(9, 'project_step2')" class="mr-2">
+                                        <span>✓ Step 2 completed</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-yellow-50 p-4 rounded-lg">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-2xl mr-2">3️⃣</span>
+                                        <p class="font-bold text-gray-800">Mark One Task Complete</p>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-2">Use <code class="bg-gray-200 px-1 rounded">PATCH /api/todos/{id}</code> to mark "Buy groceries" as complete.</p>
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" @change="completeExercise(9, 'project_step3')" class="mr-2">
+                                        <span>✓ Step 3 completed</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-red-50 p-4 rounded-lg">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-2xl mr-2">4️⃣</span>
+                                        <p class="font-bold text-gray-800">Delete One Task</p>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-2">Use <code class="bg-gray-200 px-1 rounded">DELETE /api/todos/{id}</code> to remove "Call dentist".</p>
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" @change="completeExercise(9, 'project_step4')" class="mr-2">
+                                        <span>✓ Step 4 completed</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-purple-50 p-4 rounded-lg">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-2xl mr-2">5️⃣</span>
+                                        <p class="font-bold text-gray-800">Verify Final State</p>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-2">GET /api/todos again to verify:</p>
+                                    <ul class="text-xs text-gray-600 mb-2 list-disc list-inside">
+                                        <li>"Buy groceries" - marked complete ✓</li>
+                                        <li>"Call dentist" - deleted (not in list)</li>
+                                        <li>"Finish API course" - still incomplete</li>
+                                    </ul>
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" @change="completeExercise(9, 'project_step5')" class="mr-2">
+                                        <span>✓ Step 5 completed</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Graduation Section -->
+                        <div x-show="progress.completedExercises >= 5" class="bg-gradient-to-r from-green-100 to-emerald-100 border-4 border-green-500 rounded-lg p-6 text-center">
+                            <p class="text-6xl mb-4">🎓</p>
+                            <h3 class="text-2xl font-bold text-green-800 mb-3">CONGRATULATIONS!</h3>
+                            <p class="text-lg text-gray-800 mb-4">You've completed API Zero to Hero!</p>
+                            <p class="text-sm text-gray-700 mb-6">
+                                You've mastered: APIs, HTTP methods, JSON, CRUD operations, authentication, status codes, and debugging. 
+                                You're now ready to work with real-world APIs!
+                            </p>
+                            
+                            <div class="bg-white p-4 rounded-lg mb-4">
+                                <p class="font-bold text-purple-800 mb-2">🏆 Achievements Earned:</p>
+                                <div class="flex flex-wrap justify-center gap-2">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">First Steps</span>
+                                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">API Caller</span>
+                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">CRUD Master</span>
+                                    <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Error Handler</span>
+                                    <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">API HERO 🚀</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-400">
+                                <p class="font-bold text-yellow-800 mb-2">🎯 What's Next?</p>
+                                <ul class="text-sm text-gray-700 space-y-1">
+                                    <li>✓ Try real APIs: OpenWeather, JSONPlaceholder</li>
+                                    <li>✓ Explore Swagger docs for complex APIs</li>
+                                    <li>✓ Learn about OAuth, webhooks, GraphQL</li>
+                                    <li>✓ Build your own API project!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Practical Examples (Reference Material) -->
                     <div x-show="activeLesson === 'examples'">
                         <h3 class="font-bold text-lg mb-3 text-blue-700">💻 Practical Examples</h3>
                         
@@ -3013,7 +4011,7 @@ Authorization: Bearer YOUR_TOKEN
             return {
                 // Tab & Lesson state
                 activeTab: 'learn',
-                activeLesson: 'intro',
+                activeLesson: 'level1',
                 
                 // Request state
                 method: 'GET',
@@ -3049,9 +4047,47 @@ Authorization: Bearer YOUR_TOKEN
                 showResetConfirm: false,
                 showLoginModal: false,
                 
+                // Progress tracking state
+                currentLevel: 1,
+                progress: {
+                    completedLevels: [],
+                    levelData: {
+                        1: { completed: false, exercises: [] },
+                        2: { completed: false, exercises: [] },
+                        3: { completed: false, exercises: [] },
+                        4: { completed: false, exercises: [] },
+                        5: { completed: false, exercises: [] },
+                        6: { completed: false, exercises: [] },
+                        7: { completed: false, exercises: [] },
+                        8: { completed: false, exercises: [] },
+                        9: { completed: false, exercises: [] }
+                    },
+                    achievements: [],
+                    miniProjectCompleted: false,
+                    totalExercises: 0,
+                    completedExercises: 0
+                },
+                
+                // Playground mode (guided vs freeform)
+                playgroundMode: 'freeform', // 'freeform' or 'guided'
+                currentExercise: null,
+                
                 // Computed properties
                 get apiBaseUrl() {
                     return window.location.origin;
+                },
+                
+                get progressPercentage() {
+                    const completed = this.progress.completedLevels.length;
+                    return Math.round((completed / 9) * 100);
+                },
+                
+                get isLevelUnlocked() {
+                    return (level) => {
+                        if (level === 1) return true; // First level always unlocked
+                        // Soft-lock: can access next level even if current incomplete
+                        return level <= this.currentLevel + 1;
+                    };
                 },
                 
                 init() {
@@ -3068,6 +4104,100 @@ Authorization: Bearer YOUR_TOKEN
                         } catch (e) {
                             console.error('Failed to parse saved user', e);
                         }
+                    }
+                    
+                    // Load progress from localStorage
+                    this.loadProgress();
+                },
+                
+                // Progress tracking methods
+                loadProgress() {
+                    const saved = localStorage.getItem('apiZeroToHero_progress');
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            this.currentLevel = parsed.currentLevel || 1;
+                            this.progress = { ...this.progress, ...parsed };
+                        } catch (e) {
+                            console.error('Failed to load progress', e);
+                        }
+                    }
+                },
+                
+                saveProgress() {
+                    localStorage.setItem('apiZeroToHero_progress', JSON.stringify({
+                        currentLevel: this.currentLevel,
+                        completedLevels: this.progress.completedLevels,
+                        levelData: this.progress.levelData,
+                        achievements: this.progress.achievements,
+                        miniProjectCompleted: this.progress.miniProjectCompleted,
+                        totalExercises: this.progress.totalExercises,
+                        completedExercises: this.progress.completedExercises
+                    }));
+                },
+                
+                completeExercise(levelNum, exerciseId) {
+                    if (!this.progress.levelData[levelNum].exercises.includes(exerciseId)) {
+                        this.progress.levelData[levelNum].exercises.push(exerciseId);
+                        this.progress.completedExercises++;
+                        this.saveProgress();
+                    }
+                },
+                
+                completeLevel(levelNum) {
+                    if (!this.progress.completedLevels.includes(levelNum)) {
+                        this.progress.completedLevels.push(levelNum);
+                        this.progress.levelData[levelNum].completed = true;
+                        
+                        // Advance to next level
+                        if (levelNum === this.currentLevel && levelNum < 9) {
+                            this.currentLevel = levelNum + 1;
+                        }
+                        
+                        // Check for achievements
+                        this.checkAchievements(levelNum);
+                        
+                        this.saveProgress();
+                    }
+                },
+                
+                checkAchievements(levelNum) {
+                    const achievements = [];
+                    
+                    if (levelNum === 1 && !this.progress.achievements.includes('first_level')) {
+                        achievements.push('first_level');
+                    }
+                    if (levelNum === 5 && !this.progress.achievements.includes('first_api_call')) {
+                        achievements.push('first_api_call');
+                    }
+                    if (levelNum === 8 && !this.progress.achievements.includes('broke_it_on_purpose')) {
+                        achievements.push('broke_it_on_purpose');
+                    }
+                    if (levelNum === 9 && !this.progress.achievements.includes('api_master')) {
+                        achievements.push('api_master');
+                    }
+                    
+                    achievements.forEach(achievement => {
+                        if (!this.progress.achievements.includes(achievement)) {
+                            this.progress.achievements.push(achievement);
+                            this.showAchievement(achievement);
+                        }
+                    });
+                },
+                
+                showAchievement(achievementId) {
+                    const achievements = {
+                        'first_level': { icon: '🎯', title: 'First Steps', desc: 'Completed your first level!' },
+                        'first_api_call': { icon: '🚀', title: 'API Caller', desc: 'Made your first API call!' },
+                        'broke_it_on_purpose': { icon: '💥', title: 'Breaking Things', desc: 'Learned from intentional errors!' },
+                        'api_master': { icon: '🏆', title: 'API Master', desc: 'Completed all 9 levels!' }
+                    };
+                    
+                    const achievement = achievements[achievementId];
+                    if (achievement) {
+                        // Show toast notification
+                        console.log(`🏆 Achievement Unlocked: ${achievement.title}`);
+                        // TODO: Add visual toast notification
                     }
                 },
                 
