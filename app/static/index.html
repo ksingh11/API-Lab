@@ -176,7 +176,7 @@
                     <button @click="activeTab = 'monitor'; loadDatabaseTables()" 
                             :class="activeTab === 'monitor' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                             class="pb-4 px-1 border-b-2 font-medium transition whitespace-nowrap text-sm sm:text-base">
-                        📡 Monitor
+                        📡 Network
                     </button>
                     <button @click="activeTab = 'data'; loadDatabaseTables()" 
                             :class="activeTab === 'data' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
@@ -375,7 +375,7 @@
                         </div>
                     </button>
                     
-                    <!-- Level 7: Authentication -->
+                    <!-- Level 7: Headers & Authentication -->
                     <button @click="activeLesson = 'level7'; showLessonModal = true;"
                             :class="[
                                 activeLesson === 'level7' ? 'bg-blue-100 border-blue-500' : 'border-gray-300',
@@ -387,7 +387,7 @@
                             <div class="flex items-center space-x-3">
                                 <span class="text-2xl">🔐</span>
                                 <div>
-                                    <div class="font-bold text-gray-800">Level 7: Authentication</div>
+                                    <div class="font-bold text-gray-800">Level 7: Headers & Authentication</div>
                                     <div class="text-xs text-gray-600">Tokens & Security · 20 min</div>
                                 </div>
                             </div>
@@ -1576,10 +1576,10 @@
                         </div>
                     </div>
                     
-                    <!-- Level 7: Authentication -->
+                    <!-- Level 7: Headers & Authentication -->
                     <div x-show="activeLesson === 'level7'">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-lg text-blue-700">🔐 Level 7: Authentication</h3>
+                            <h3 class="font-bold text-lg text-blue-700">🔐 Level 7: Headers & Authentication</h3>
                             <button @click="completeLevel(7)" 
                                     x-show="!progress.levelData[7].completed"
                                     class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
@@ -3274,7 +3274,7 @@ Authorization: Bearer YOUR_TOKEN
             <!-- Tab Content: API Documentation -->
             <div x-show="activeTab === 'docs'" x-cloak>
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-2xl font-bold mb-6">📖 API Documentation Tutorial</h2>
+                    <h2 class="text-2xl font-bold mb-6">📖 API Documentation Example</h2>
                     
                     <!-- Highlighted: API Template (Recommended Resource) -->
                     <div class="mb-6 bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg border-2 border-purple-400 shadow-md">
@@ -4050,13 +4050,13 @@ Authorization: Bearer YOUR_TOKEN
                 </div>
             </div>
 
-            <!-- Tab Content: Request Monitor -->
+            <!-- Tab Content: Network Monitor -->
             <div x-show="activeTab === 'monitor'" x-cloak>
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex justify-between items-center mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold">📡 Request Monitor</h2>
-                            <p class="text-sm text-gray-600 mt-1">Network-style request and response inspector</p>
+                            <h2 class="text-2xl font-bold">📡 Network Monitor</h2>
+                            <p class="text-sm text-gray-600 mt-1">Track all API requests and responses in real-time</p>
                         </div>
                         <button @click="loadDatabaseTables()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
                             🔄 Refresh
@@ -4686,10 +4686,12 @@ Authorization: Bearer YOUR_TOKEN
                     if (!this.token) {
                         // Don't show alert on initial tab click - the UI banner will guide them
                         this.dbData[this.dbTable] = [];
+                        this.dbData.request_logs = [];
                         return;
                     }
                     
                     try {
+                        // Load the selected table (for Data Explorer)
                         const res = await fetch(`/api/admin/db/tables/${this.dbTable}`, {
                             headers: {
                                 'Authorization': `Bearer ${this.token}`
@@ -4703,12 +4705,26 @@ Authorization: Bearer YOUR_TOKEN
                             const error = await res.json();
                             const errorMsg = error.error || error.msg || 'Unknown error';
                             console.error('Database load error:', errorMsg);
-                            // Clear the data to show empty state
                             this.dbData[this.dbTable] = [];
+                        }
+                        
+                        // Always load request_logs (for Network Monitor)
+                        const logsRes = await fetch('/api/admin/db/tables/request_logs', {
+                            headers: {
+                                'Authorization': `Bearer ${this.token}`
+                            }
+                        });
+                        
+                        if (logsRes.ok) {
+                            const logsData = await logsRes.json();
+                            this.dbData.request_logs = logsData.rows;
+                        } else {
+                            this.dbData.request_logs = [];
                         }
                     } catch (error) {
                         console.error('Error loading database:', error);
                         this.dbData[this.dbTable] = [];
+                        this.dbData.request_logs = [];
                     }
                 },
                 
