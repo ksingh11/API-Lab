@@ -4523,6 +4523,9 @@ Authorization: Bearer YOUR_TOKEN
                     ];
                     
                     return (this.dbData.request_logs || []).filter(log => {
+                        // Exclude root URL (app loading itself)
+                        if (log.path === '/' || log.path === '') return false;
+                        
                         // Exclude system paths
                         return !systemPaths.some(path => log.path.includes(path));
                     });
