@@ -77,12 +77,37 @@
                         </button>
                     </div>
                     <div x-show="token" class="flex items-center space-x-2 sm:space-x-3">
-                        <span class="flex items-center px-2 sm:px-3 py-1.5 bg-green-500 bg-opacity-20 rounded-lg text-xs sm:text-sm">
-                            <svg class="w-4 h-4 mr-1.5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span x-text="currentUser?.email" class="hidden sm:inline"></span>
-                        </span>
+                        <!-- Auth Status Panel -->
+                        <div class="relative group">
+                            <span class="flex items-center px-2 sm:px-3 py-1.5 bg-green-500 bg-opacity-20 rounded-lg text-xs sm:text-sm cursor-pointer">
+                                <svg class="w-4 h-4 mr-1.5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span x-text="currentUser?.email" class="hidden sm:inline"></span>
+                                <span x-show="currentUser?.role === 'admin'" class="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded text-xs font-bold">ADMIN</span>
+                            </span>
+                            <!-- Auth Details Tooltip -->
+                            <div class="absolute top-full right-0 mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 p-3">
+                                <div class="font-bold mb-2 text-sm">🔐 Auth Status</div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400">Email:</span>
+                                        <span x-text="currentUser?.email"></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400">Role:</span>
+                                        <span x-text="currentUser?.role" :class="currentUser?.role === 'admin' ? 'text-red-400 font-bold' : 'text-green-400'"></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400">Token:</span>
+                                        <span class="text-green-400">Valid ✓</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2 border-t border-gray-700 text-xs text-gray-400">
+                                    💡 Hover to view auth details
+                                </div>
+                            </div>
+                        </div>
                         <button @click="token = null; currentUser = null; localStorage.removeItem('apilab_token'); localStorage.removeItem('apilab_user')" 
                                 class="px-2 sm:px-3 py-1.5 bg-red-500 bg-opacity-20 text-white text-xs sm:text-sm rounded-lg hover:bg-opacity-30 transition">
                             <span class="hidden sm:inline">Logout</span>
@@ -148,10 +173,15 @@
                             class="pb-4 px-1 border-b-2 font-medium transition whitespace-nowrap text-sm sm:text-base">
                         🚀 Playground
                     </button>
-                    <button @click="activeTab = 'database'; loadDatabaseTables()" 
-                            :class="activeTab === 'database' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                    <button @click="activeTab = 'monitor'; loadDatabaseTables()" 
+                            :class="activeTab === 'monitor' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                             class="pb-4 px-1 border-b-2 font-medium transition whitespace-nowrap text-sm sm:text-base">
-                        📊 Database
+                        📡 Monitor
+                    </button>
+                    <button @click="activeTab = 'data'; loadDatabaseTables()" 
+                            :class="activeTab === 'data' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                            class="pb-4 px-1 border-b-2 font-medium transition whitespace-nowrap text-sm sm:text-base">
+                        📊 Data
                     </button>
                     <button @click="activeTab = 'docs'" 
                             :class="activeTab === 'docs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
@@ -193,6 +223,14 @@
                         <div class="mt-3 flex items-center justify-between text-xs text-gray-600">
                             <span><span x-text="progress.completedLevels.length"></span> of 9 levels completed</span>
                             <span><span x-text="progress.achievements.length"></span> achievements 🏆</span>
+                        </div>
+                        
+                        <!-- Reset Progress Button -->
+                        <div class="mt-4 pt-4 border-t border-blue-200">
+                            <button @click="resetLearningProgress()" 
+                                    class="w-full sm:w-auto px-4 py-2 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition flex items-center justify-center">
+                                <span class="mr-1">🔄</span> Reset All Progress
+                            </button>
                         </div>
                     </div>
                     
@@ -436,8 +474,24 @@
                             <h3 class="font-bold text-lg text-blue-700">🎯 Level 1: What is an API?</h3>
                             <button @click="completeLevel(1)" 
                                     x-show="!progress.levelData[1].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -625,8 +679,24 @@
                             <h3 class="font-bold text-lg text-blue-700">💻 Level 2: How the Web Works</h3>
                             <button @click="completeLevel(2)" 
                                     x-show="!progress.levelData[2].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -858,29 +928,6 @@
                             </table>
                         </div>
 
-                        <!-- Video Section at the end -->
-                        <div class="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300">
-                            <div class="flex items-center mb-3">
-                                <span class="text-2xl mr-2">🎬</span>
-                                <p class="font-bold text-purple-800 text-base">Watch: Visual Explanation</p>
-                            </div>
-                            <!-- Constrained video container -->
-                            <div class="max-w-2xl mx-auto">
-                                <div class="bg-white rounded-lg overflow-hidden shadow-lg">
-                                    <div class="relative" style="padding-bottom: 56.25%; height: 0;">
-                                        <iframe 
-                                            src="https://drive.google.com/file/d/1RFVCFUyu-oEkuwLyK9ip_hybJZDFmxbt/preview" 
-                                            class="absolute top-0 left-0 w-full h-full border-0"
-                                            allow="autoplay"
-                                            loading="lazy">
-                                        </iframe>
-                                    </div>
-                                </div>
-                            </div>
-                            <p class="text-xs text-purple-700 mt-2 text-center">
-                                💡 This video shows the entire client-server request-response cycle with Instagram examples!
-                            </p>
-                        </div>
                     </div>
 
 
@@ -890,8 +937,24 @@
                             <h3 class="font-bold text-lg text-blue-700">🔧 Level 4: HTTP Methods</h3>
                             <button @click="completeLevel(4)" 
                                     x-show="!progress.levelData[4].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -1127,8 +1190,24 @@
                             <h3 class="font-bold text-lg text-blue-700">📊 Level 8: Status Codes & Debugging</h3>
                             <button @click="completeLevel(8)" 
                                     x-show="!progress.levelData[8].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -1325,8 +1404,24 @@
                             <h3 class="font-bold text-lg text-blue-700">📦 Level 3: JSON Basics</h3>
                             <button @click="completeLevel(3)" 
                                     x-show="!progress.levelData[3].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -1487,8 +1582,24 @@
                             <h3 class="font-bold text-lg text-blue-700">🔐 Level 7: Authentication</h3>
                             <button @click="completeLevel(7)" 
                                     x-show="!progress.levelData[7].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -1505,8 +1616,98 @@
                             </p>
                         </div>
                         
+                        <!-- Headers Concept (ELI5 + Real Explanation) -->
+                        <div class="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-lg border-2 border-purple-400">
+                            <div class="flex items-center mb-3">
+                                <span class="text-3xl mr-2">📬</span>
+                                <div>
+                                    <h4 class="font-bold text-purple-800 text-lg">First, Let's Learn About Headers!</h4>
+                                    <p class="text-xs text-purple-600">Think of them as the "envelope" around your message</p>
+                                </div>
+                            </div>
+                            
+                            <!-- ELI5 Explanation -->
+                            <div class="bg-white p-4 rounded-lg border border-purple-200 mb-4">
+                                <p class="font-bold text-purple-700 mb-2 text-sm">🎈 Simple Explanation (Like You're 5)</p>
+                                <div class="space-y-2 text-sm text-gray-700">
+                                    <p>Imagine you're sending a letter to your friend:</p>
+                                    <div class="bg-purple-50 p-3 rounded border border-purple-200">
+                                        <div class="mb-2">
+                                            <strong>📨 The ENVELOPE (Headers):</strong> Has important info ABOUT the letter
+                                            <ul class="list-disc list-inside ml-4 mt-1 text-xs">
+                                                <li>FROM: Your name and address</li>
+                                                <li>TO: Friend's name and address</li>
+                                                <li>STAMP: Shows you paid for delivery</li>
+                                                <li>URGENT: Red sticker if it's important!</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <strong>📝 The LETTER INSIDE (Body):</strong> The actual message you're sending
+                                            <ul class="list-disc list-inside ml-4 mt-1 text-xs">
+                                                <li>"Hey! Want to play tomorrow?"</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <p class="text-purple-700 font-medium">
+                                        💡 <strong>Key Point:</strong> The envelope (headers) tells the mailman HOW to deliver it. 
+                                        The letter inside (body) is the actual message!
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Technical Explanation -->
+                            <div class="bg-white p-4 rounded-lg border border-purple-200 mb-4">
+                                <p class="font-bold text-purple-700 mb-2 text-sm">🔧 Technical Explanation</p>
+                                <div class="space-y-2 text-sm text-gray-700">
+                                    <p><strong>Headers</strong> are metadata (data ABOUT the data) sent with every API request and response.</p>
+                                    <div class="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs">
+                                        <div class="text-blue-600 mb-2">// REQUEST STRUCTURE</div>
+                                        <div class="text-green-600">POST /api/todos</div>
+                                        <div class="text-orange-600 mb-2">Headers: {</div>
+                                        <div class="ml-4">
+                                            <div>Content-Type: application/json</div>
+                                            <div>Authorization: Bearer token123</div>
+                                            <div>Accept: application/json</div>
+                                        </div>
+                                        <div class="text-orange-600 mb-2">}</div>
+                                        <div class="text-purple-600">Body: {</div>
+                                        <div class="ml-4">"title": "Buy milk"</div>
+                                        <div class="text-purple-600">}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Common Headers -->
+                            <div class="bg-white p-4 rounded-lg border border-purple-200">
+                                <p class="font-bold text-purple-700 mb-3 text-sm">📋 Common Headers You'll See:</p>
+                                <div class="space-y-2 text-xs">
+                                    <div class="bg-blue-50 p-2 rounded border border-blue-200">
+                                        <strong class="text-blue-700">Content-Type:</strong> 
+                                        <span class="text-gray-700">What format is the data? (JSON, XML, HTML)</span>
+                                        <div class="font-mono text-xs mt-1 text-blue-600">Example: application/json</div>
+                                    </div>
+                                    <div class="bg-green-50 p-2 rounded border border-green-200">
+                                        <strong class="text-green-700">Authorization:</strong> 
+                                        <span class="text-gray-700">Your password/token to prove who you are 🔐</span>
+                                        <div class="font-mono text-xs mt-1 text-green-600">Example: Bearer eyJhbGciOiJIUzI1...</div>
+                                    </div>
+                                    <div class="bg-yellow-50 p-2 rounded border border-yellow-200">
+                                        <strong class="text-yellow-700">Accept:</strong> 
+                                        <span class="text-gray-700">What format do you WANT back?</span>
+                                        <div class="font-mono text-xs mt-1 text-yellow-600">Example: application/json</div>
+                                    </div>
+                                    <div class="bg-purple-50 p-2 rounded border border-purple-200">
+                                        <strong class="text-purple-700">User-Agent:</strong> 
+                                        <span class="text-gray-700">What app/browser are you using?</span>
+                                        <div class="font-mono text-xs mt-1 text-purple-600">Example: Mozilla/5.0 (iPhone)...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <p class="text-gray-700 mb-4 text-sm">
-                            APIs have TWO ways to check who you are. Let's learn both!
+                            Now that you understand headers, let's see how <strong>authentication credentials are passed via headers!</strong> 
+                            APIs have TWO ways to check who you are:
                         </p>
                         
                         <!-- Basic Auth -->
@@ -1530,10 +1731,14 @@
                                 </p>
                             </div>
 
-                            <div class="bg-orange-100 p-2 rounded text-xs mb-2">
-                                <div class="font-bold mb-1">What the computer sees:</div>
-                                <div class="font-mono">Username: testuser@apilab.dev</div>
-                                <div class="font-mono">Password: test123</div>
+                            <div class="bg-orange-100 p-3 rounded text-xs mb-2">
+                                <div class="font-bold mb-2 text-sm">📬 Sent via Authorization Header:</div>
+                                <div class="bg-white p-2 rounded border border-orange-300 font-mono">
+                                    <div class="text-orange-700">Authorization: Basic dGVzdHVzZXJAYXBpbGFiLmRldjp0ZXN0MTIz</div>
+                                </div>
+                                <div class="mt-2 text-xs text-gray-600">
+                                    💡 The browser combines your username:password and encodes it (Base64) before sending
+                                </div>
                             </div>
                             
                             <div class="space-y-1 text-sm">
@@ -1571,12 +1776,20 @@
                             </div>
 
                             <div class="bg-green-100 p-3 rounded text-xs mb-2">
-                                <div class="font-bold mb-2">How it works:</div>
-                                <div class="space-y-1">
-                                    <div><strong>Step 1:</strong> Log in with username & password</div>
-                                    <div><strong>Step 2:</strong> Computer gives you a magic ticket (looks like random letters)</div>
-                                    <div class="font-mono text-xs bg-white p-1 rounded">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
-                                    <div><strong>Step 3:</strong> Use that ticket for everything (no more password needed!)</div>
+                                <div class="font-bold mb-2 text-sm">How it works:</div>
+                                <div class="space-y-2">
+                                    <div><strong>Step 1:</strong> Log in with username & password (one time)</div>
+                                    <div><strong>Step 2:</strong> Server gives you a JWT token (looks like random letters):</div>
+                                    <div class="font-mono text-xs bg-white p-2 rounded border border-green-300">
+                                        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxfQ...
+                                    </div>
+                                    <div><strong>Step 3:</strong> For every future request, send the token via <span class="text-green-700 font-bold">Authorization Header:</span></div>
+                                    <div class="bg-white p-2 rounded border border-green-300 font-mono">
+                                        <div class="text-green-700">Authorization: Bearer eyJhbGciOiJIUzI1NiI...</div>
+                                    </div>
+                                    <div class="text-xs text-gray-600 mt-1">
+                                        💡 The word "Bearer" means "whoever carries this token has permission"
+                                    </div>
                                 </div>
                             </div>
                             
@@ -1626,8 +1839,24 @@
                             <h3 class="font-bold text-lg text-blue-700">🚀 Level 5: Your First API Call</h3>
                             <button @click="completeLevel(5)" 
                                     x-show="!progress.levelData[5].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -1742,8 +1971,24 @@
                             <h3 class="font-bold text-lg text-blue-700">⭐ Level 6: CRUD Operations</h3>
                             <button @click="completeLevel(6)" 
                                     x-show="!progress.levelData[6].completed"
-                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    class="px-4 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
                                 ✓ Mark Complete
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -2027,8 +2272,24 @@
                             <h3 class="font-bold text-lg text-blue-700">🏆 Level 9: Mini Project - Your Graduation!</h3>
                             <button @click="completeLevel(9); progress.miniProjectCompleted = true; saveProgress()" 
                                     x-show="!progress.levelData[9].completed"
-                                    class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs rounded-lg hover:from-green-700 hover:to-emerald-700 font-bold">
+                                    class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs rounded-lg hover:from-green-700 hover:to-emerald-700 font-bold transition">
                                 🎓 Complete & Graduate!
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mb-6 flex flex-wrap gap-2">
+                            <button @click="activeTab = 'playground'; showLessonModal = false" 
+                                    class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition flex items-center">
+                                <span class="mr-1">🚀</span> Try Now
+                            </button>
+                            <button @click="activeTab = 'monitor'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition flex items-center">
+                                <span class="mr-1">📡</span> View Monitor
+                            </button>
+                            <button @click="activeTab = 'data'; showLessonModal = false; loadDatabaseTables()" 
+                                    class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition flex items-center">
+                                <span class="mr-1">📊</span> Check Data
                             </button>
                         </div>
                         
@@ -3678,22 +3939,15 @@ Authorization: Bearer YOUR_TOKEN
                 </div>
             </div>
 
-            <!-- Tab Content: Database -->
-            <div x-show="activeTab === 'database'" x-cloak>
+            <!-- Tab Content: Data Explorer -->
+            <div x-show="activeTab === 'data'" x-cloak>
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex justify-between items-center mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold">📊 Live Database</h2>
-                            <div x-show="token" class="flex items-center mt-2 text-sm">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <svg class="mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
-                                        <circle cx="4" cy="4" r="3" />
-                                    </svg>
-                                    Logged in as <span class="ml-1 font-semibold" x-text="currentUser?.email"></span>
-                                </span>
-                            </div>
+                            <h2 class="text-2xl font-bold">📊 Data Explorer</h2>
+                            <p class="text-sm text-gray-600 mt-1">View live database tables and records</p>
                         </div>
-                        <button @click="loadDatabaseTables()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        <button @click="loadDatabaseTables()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
                             🔄 Refresh
                         </button>
                     </div>
@@ -3712,18 +3966,13 @@ Authorization: Bearer YOUR_TOKEN
                     <div class="mb-4 flex space-x-2">
                         <button @click="dbTable = 'todos'; loadDatabaseTables()" 
                                 :class="dbTable === 'todos' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
-                                class="px-4 py-2 rounded-lg">
+                                class="px-4 py-2 rounded-lg transition">
                             Todos (<span x-text="dbData.todos?.length || 0"></span>)
                         </button>
                         <button @click="dbTable = 'users'; loadDatabaseTables()" 
                                 :class="dbTable === 'users' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
-                                class="px-4 py-2 rounded-lg">
+                                class="px-4 py-2 rounded-lg transition">
                             Users (<span x-text="dbData.users?.length || 0"></span>)
-                        </button>
-                        <button @click="dbTable = 'request_logs'; loadDatabaseTables()" 
-                                :class="dbTable === 'request_logs' ? 'bg-blue-500 text-white' : 'bg-gray-200'"
-                                class="px-4 py-2 rounded-lg">
-                            Logs (<span x-text="dbData.request_logs?.length || 0"></span>)
                         </button>
                     </div>
 
@@ -3791,37 +4040,142 @@ Authorization: Bearer YOUR_TOKEN
                             </tbody>
                         </table>
 
-                        <!-- Request Logs Table -->
-                        <table x-show="dbTable === 'request_logs'" class="w-full border-collapse border text-sm">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="border p-2 text-left">Method</th>
-                                    <th class="border p-2 text-left">Path</th>
-                                    <th class="border p-2 text-left">Status</th>
-                                    <th class="border p-2 text-left">Time</th>
-                                    <th class="border p-2 text-left">Auth</th>
-                                    <th class="border p-2 text-left">Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="log in dbData.request_logs" :key="log.id">
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="border p-2 font-mono" x-text="log.method"></td>
-                                        <td class="border p-2 text-xs" x-text="log.path"></td>
-                                        <td class="border p-2" :class="getStatusClass(log.status_code)" x-text="log.status_code"></td>
-                                        <td class="border p-2" x-text="`${log.latency_ms}ms`"></td>
-                                        <td class="border p-2 text-xs" x-text="log.auth_method"></td>
-                                        <td class="border p-2 text-xs" x-text="formatDate(log.timestamp)"></td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
                     </div>
 
                     <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 text-sm">
                         <p class="text-blue-800">
-                            💡 This table updates in real-time when you make API requests. Try creating a todo and watch a new row appear here!
+                            💡 This data updates in real-time when you make API requests. Try creating a todo and watch it appear here!
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Request Monitor -->
+            <div x-show="activeTab === 'monitor'" x-cloak>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold">📡 Request Monitor</h2>
+                            <p class="text-sm text-gray-600 mt-1">Network-style request and response inspector</p>
+                        </div>
+                        <button @click="loadDatabaseTables()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                            🔄 Refresh
+                        </button>
+                    </div>
+
+                    <!-- Login Required Message -->
+                    <div x-show="!token" class="text-center py-12">
+                        <div class="text-blue-400 text-6xl mb-4">🔐</div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Login Required</h3>
+                        <p class="text-gray-600 mb-4">Please log in to view request logs</p>
+                        <button @click="showLoginModal = true" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">
+                            🔑 Login Now
+                        </button>
+                    </div>
+
+                    <!-- Request List -->
+                    <div x-show="token">
+                        <!-- Stats Summary -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-gray-50 p-4 rounded-lg border">
+                                <div class="text-2xl font-bold text-gray-800" x-text="dbData.request_logs?.length || 0"></div>
+                                <div class="text-xs text-gray-600">Total Requests</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                <div class="text-2xl font-bold text-green-600" x-text="(dbData.request_logs || []).filter(log => log.status_code >= 200 && log.status_code < 300).length"></div>
+                                <div class="text-xs text-gray-600">2xx Success</div>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                                <div class="text-2xl font-bold text-yellow-600" x-text="(dbData.request_logs || []).filter(log => log.status_code >= 400 && log.status_code < 500).length"></div>
+                                <div class="text-xs text-gray-600">4xx Client Error</div>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                                <div class="text-2xl font-bold text-red-600" x-text="(dbData.request_logs || []).filter(log => log.status_code >= 500).length"></div>
+                                <div class="text-xs text-gray-600">5xx Server Error</div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div x-show="!dbData.request_logs || dbData.request_logs.length === 0" class="text-center py-12">
+                            <div class="text-gray-400 text-6xl mb-4">📡</div>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Requests Yet</h3>
+                            <p class="text-gray-600 mb-4">Make API requests from the Playground to see them here</p>
+                            <button @click="activeTab = 'playground'" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                                Go to Playground
+                            </button>
+                        </div>
+
+                        <!-- Request Table -->
+                        <div x-show="dbData.request_logs && dbData.request_logs.length > 0" class="overflow-x-auto">
+                            <table class="w-full border-collapse border text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="border p-2 text-left">Method</th>
+                                        <th class="border p-2 text-left">Path</th>
+                                        <th class="border p-2 text-left">Status</th>
+                                        <th class="border p-2 text-left">Explanation</th>
+                                        <th class="border p-2 text-left">Time</th>
+                                        <th class="border p-2 text-left">Auth</th>
+                                        <th class="border p-2 text-left">Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="log in dbData.request_logs" :key="log.id">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="border p-2">
+                                                <span class="px-2 py-1 rounded text-xs font-mono font-bold"
+                                                      :class="{
+                                                          'bg-blue-100 text-blue-800': log.method === 'GET',
+                                                          'bg-green-100 text-green-800': log.method === 'POST',
+                                                          'bg-yellow-100 text-yellow-800': log.method === 'PUT',
+                                                          'bg-orange-100 text-orange-800': log.method === 'PATCH',
+                                                          'bg-red-100 text-red-800': log.method === 'DELETE'
+                                                      }"
+                                                      x-text="log.method"></span>
+                                            </td>
+                                            <td class="border p-2 text-xs font-mono" x-text="log.path"></td>
+                                            <td class="border p-2">
+                                                <span class="px-2 py-1 rounded text-xs font-bold"
+                                                      :class="{
+                                                          'bg-green-100 text-green-800': log.status_code >= 200 && log.status_code < 300,
+                                                          'bg-yellow-100 text-yellow-800': log.status_code >= 400 && log.status_code < 500,
+                                                          'bg-red-100 text-red-800': log.status_code >= 500
+                                                      }"
+                                                      x-text="log.status_code"></span>
+                                            </td>
+                                            <td class="border p-2 text-xs text-gray-600">
+                                                <span x-show="log.status_code >= 200 && log.status_code < 300">✅ Success</span>
+                                                <span x-show="log.status_code >= 400 && log.status_code < 500">⚠️ Client Error</span>
+                                                <span x-show="log.status_code >= 500">❌ Server Error</span>
+                                            </td>
+                                            <td class="border p-2 text-xs">
+                                                <span :class="log.latency_ms > 1000 ? 'text-red-600 font-bold' : log.latency_ms > 500 ? 'text-yellow-600' : 'text-green-600'"
+                                                      x-text="`${log.latency_ms}ms`"></span>
+                                            </td>
+                                            <td class="border p-2">
+                                                <span class="text-xs px-2 py-1 rounded"
+                                                      :class="{
+                                                          'bg-gray-100 text-gray-800': log.auth_method === 'none',
+                                                          'bg-blue-100 text-blue-800': log.auth_method === 'basic',
+                                                          'bg-purple-100 text-purple-800': log.auth_method === 'token'
+                                                      }"
+                                                      x-text="log.auth_method || 'none'"></span>
+                                            </td>
+                                            <td class="border p-2 text-xs text-gray-600" x-text="formatDate(log.timestamp)"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 text-sm">
+                            <p class="text-blue-800">
+                                💡 <strong>Network Monitor:</strong> This tracks all API requests you make. 
+                                <span class="text-green-700">Green = Success (2xx)</span> • 
+                                <span class="text-yellow-700">Yellow = Client Error (4xx)</span> • 
+                                <span class="text-red-700">Red = Server Error (5xx)</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4121,6 +4475,33 @@ Authorization: Bearer YOUR_TOKEN
                         totalExercises: this.progress.totalExercises,
                         completedExercises: this.progress.completedExercises
                     }));
+                },
+                
+                resetLearningProgress() {
+                    if (confirm('⚠️ Are you sure you want to reset ALL learning progress? This will erase all completed levels and achievements. This cannot be undone!')) {
+                        // Reset progress to initial state
+                        this.currentLevel = 1;
+                        this.progress = {
+                            completedLevels: [],
+                            achievements: [],
+                            miniProjectCompleted: false,
+                            totalExercises: 50,
+                            completedExercises: 0,
+                            levelData: {
+                                1: { completed: false, exercises: [] },
+                                2: { completed: false, exercises: [] },
+                                3: { completed: false, exercises: [] },
+                                4: { completed: false, exercises: [] },
+                                5: { completed: false, exercises: [] },
+                                6: { completed: false, exercises: [] },
+                                7: { completed: false, exercises: [] },
+                                8: { completed: false, exercises: [] },
+                                9: { completed: false, exercises: [] }
+                            }
+                        };
+                        this.saveProgress();
+                        alert('✅ Learning progress has been reset! Start fresh from Level 1.');
+                    }
                 },
                 
                 completeExercise(levelNum, exerciseId) {
