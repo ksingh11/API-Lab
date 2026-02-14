@@ -4159,35 +4159,35 @@ Authorization: Bearer YOUR_TOKEN
                         <!-- Stats Summary -->
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                             <div class="bg-gray-50 p-4 rounded-lg border">
-                                <div class="text-2xl font-bold text-gray-800" x-text="dbData.request_logs?.length || 0"></div>
-                                <div class="text-xs text-gray-600">Total Requests</div>
+                                <div class="text-2xl font-bold text-gray-800" x-text="filteredRequestLogs.length"></div>
+                                <div class="text-xs text-gray-600">Learning Requests</div>
                             </div>
                             <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                                <div class="text-2xl font-bold text-green-600" x-text="(dbData.request_logs || []).filter(log => log.status_code >= 200 && log.status_code < 300).length"></div>
+                                <div class="text-2xl font-bold text-green-600" x-text="filteredRequestLogs.filter(log => log.status_code >= 200 && log.status_code < 300).length"></div>
                                 <div class="text-xs text-gray-600">2xx Success</div>
                             </div>
                             <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                                <div class="text-2xl font-bold text-yellow-600" x-text="(dbData.request_logs || []).filter(log => log.status_code >= 400 && log.status_code < 500).length"></div>
+                                <div class="text-2xl font-bold text-yellow-600" x-text="filteredRequestLogs.filter(log => log.status_code >= 400 && log.status_code < 500).length"></div>
                                 <div class="text-xs text-gray-600">4xx Client Error</div>
                             </div>
                             <div class="bg-red-50 p-4 rounded-lg border border-red-200">
-                                <div class="text-2xl font-bold text-red-600" x-text="(dbData.request_logs || []).filter(log => log.status_code >= 500).length"></div>
+                                <div class="text-2xl font-bold text-red-600" x-text="filteredRequestLogs.filter(log => log.status_code >= 500).length"></div>
                                 <div class="text-xs text-gray-600">5xx Server Error</div>
                             </div>
                         </div>
 
                         <!-- Empty State -->
-                        <div x-show="!dbData.request_logs || dbData.request_logs.length === 0" class="text-center py-12">
+                        <div x-show="filteredRequestLogs.length === 0" class="text-center py-12">
                             <div class="text-gray-400 text-6xl mb-4">📡</div>
-                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Requests Yet</h3>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Learning Requests Yet</h3>
                             <p class="text-gray-600 mb-4">Make API requests from the Playground to see them here</p>
-                            <button @click="activeTab = 'playground'" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-                                Go to Playground
+                            <button @click="window.open(window.location.href.split('?')[0] + '?tab=playground', '_blank')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                                Open Playground
                             </button>
                         </div>
 
                         <!-- Request Table -->
-                        <div x-show="dbData.request_logs && dbData.request_logs.length > 0" class="overflow-x-auto">
+                        <div x-show="filteredRequestLogs.length > 0" class="overflow-x-auto">
                             <table class="w-full border-collapse border text-sm">
                                 <thead class="bg-gray-100">
                                     <tr>
@@ -4201,7 +4201,7 @@ Authorization: Bearer YOUR_TOKEN
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <template x-for="log in [...(dbData.request_logs || [])].reverse()" :key="log.id">
+                                    <template x-for="log in [...filteredRequestLogs].reverse()" :key="log.id">
                                         <tr class="hover:bg-gray-50">
                                             <td class="border p-2">
                                                 <span class="px-2 py-1 rounded text-xs font-mono font-bold"
@@ -4251,7 +4251,7 @@ Authorization: Bearer YOUR_TOKEN
 
                         <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 text-sm">
                             <p class="text-blue-800">
-                                💡 <strong>Network Monitor:</strong> This tracks all API requests you make. 
+                                💡 <strong>Network Monitor:</strong> Shows your learning API requests (excludes system calls like database queries). 
                                 <span class="text-green-700">Green = Success (2xx)</span> • 
                                 <span class="text-yellow-700">Yellow = Client Error (4xx)</span> • 
                                 <span class="text-red-700">Red = Server Error (5xx)</span>
@@ -4510,6 +4510,22 @@ Authorization: Bearer YOUR_TOKEN
                         // Soft-lock: can access next level even if current incomplete
                         return level <= this.currentLevel + 1;
                     };
+                },
+                
+                get filteredRequestLogs() {
+                    // Filter out internal system API calls that don't help users learn
+                    const systemPaths = [
+                        '/api/admin/db/tables/',    // Database table queries
+                        '/api/admin/users',         // User management
+                        '/api/auth/login',          // Login requests (shown in auth, not needed in monitor)
+                        '/static/',                 // Static file requests
+                        '/favicon',                 // Favicon requests
+                    ];
+                    
+                    return (this.dbData.request_logs || []).filter(log => {
+                        // Exclude system paths
+                        return !systemPaths.some(path => log.path.includes(path));
+                    });
                 },
                 
                 init() {
